@@ -489,7 +489,7 @@ const RegisterPage = () => {
                                                     onClick={() => setShowPassword(!showPassword)}
                                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
                                                 >
-                                                    <span className="material-icons text-xl">{showPassword ? 'visibility' : 'visibility_off'}</span>
+                                                    <span className="material-icons text-xl">{showPassword ? 'visibility_off' : 'visibility'}</span>
                                                 </button>
                                             </div>
                                             {/* Strength Bar */}
@@ -523,7 +523,7 @@ const RegisterPage = () => {
                                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
                                                     >
-                                                        <span className="material-icons text-xl">{showConfirmPassword ? 'visibility' : 'visibility_off'}</span>
+                                                        <span className="material-icons text-xl">{showConfirmPassword ? 'visibility_off' : 'visibility'}</span>
                                                     </button>
                                                 </div>
                                             </div>

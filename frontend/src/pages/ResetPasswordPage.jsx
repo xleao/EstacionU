@@ -7,6 +7,8 @@ const ResetPasswordPage = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
@@ -127,15 +129,24 @@ const ResetPasswordPage = () => {
                                         <div className="relative">
                                             <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">lock</span>
                                             <input
-                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none dark:text-white text-sm"
+                                                className="w-full pl-10 pr-12 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none dark:text-white text-sm"
                                                 id="password"
                                                 placeholder="••••••••"
                                                 required
-                                                type="password"
+                                                type={showPassword ? "text" : "password"}
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 disabled={status === 'loading' || !token}
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none transition-colors"
+                                            >
+                                                <span className="material-icons text-xl">
+                                                    {showPassword ? 'visibility_off' : 'visibility'}
+                                                </span>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -146,15 +157,24 @@ const ResetPasswordPage = () => {
                                         <div className="relative">
                                             <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">lock_clock</span>
                                             <input
-                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none dark:text-white text-sm"
+                                                className="w-full pl-10 pr-12 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none dark:text-white text-sm"
                                                 id="confirmPassword"
                                                 placeholder="••••••••"
                                                 required
-                                                type="password"
+                                                type={showConfirmPassword ? "text" : "password"}
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 disabled={status === 'loading' || !token}
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none transition-colors"
+                                            >
+                                                <span className="material-icons text-xl">
+                                                    {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                                                </span>
+                                            </button>
                                         </div>
                                         <p className="text-[11px] text-slate-400 ml-1 mt-1">Mínimo 8 caracteres.</p>
                                     </div>

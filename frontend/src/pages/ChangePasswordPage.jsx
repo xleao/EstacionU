@@ -156,7 +156,7 @@ const ChangePasswordPage = () => {
                                             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                                             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#3C96E0] transition-colors p-1 flex"
                                         >
-                                            <span className="material-icons text-[18px]">{showCurrentPassword ? 'visibility' : 'visibility_off'}</span>
+                                            <span className="material-icons text-[18px]">{showCurrentPassword ? 'visibility_off' : 'visibility'}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -202,7 +202,7 @@ const ChangePasswordPage = () => {
                                             onClick={() => setShowNewPassword(!showNewPassword)}
                                             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#3C96E0] transition-colors p-1 flex"
                                         >
-                                            <span className="material-icons text-[18px]">{showNewPassword ? 'visibility' : 'visibility_off'}</span>
+                                            <span className="material-icons text-[18px]">{showNewPassword ? 'visibility_off' : 'visibility'}</span>
                                         </button>
                                     </div>
 
@@ -240,7 +240,7 @@ const ChangePasswordPage = () => {
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#3C96E0] transition-colors p-1 flex"
                                         >
-                                            <span className="material-icons text-[18px]">{showConfirmPassword ? 'visibility' : 'visibility_off'}</span>
+                                            <span className="material-icons text-[18px]">{showConfirmPassword ? 'visibility_off' : 'visibility'}</span>
                                         </button>
                                     </div>
                                 </div>

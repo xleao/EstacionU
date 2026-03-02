@@ -11,6 +11,7 @@ const LoginPage = () => {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [showForgotModal, setShowForgotModal] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [forgotEmail, setForgotEmail] = useState('');
     const [forgotStatus, setForgotStatus] = useState('idle'); // 'idle', 'loading', 'success'
     const { login, loginWithGoogle } = useAuth();
@@ -107,14 +108,23 @@ const LoginPage = () => {
                                 <div className="relative">
                                     <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">lock_outline</span>
                                     <input
-                                        className="w-full pl-10 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none dark:text-white text-sm shadow-sm"
+                                        className="w-full pl-10 pr-12 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none dark:text-white text-sm shadow-sm"
                                         id="password"
                                         placeholder="••••••••"
                                         required
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none transition-colors"
+                                    >
+                                        <span className="material-icons text-xl">
+                                            {showPassword ? 'visibility_off' : 'visibility'}
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
