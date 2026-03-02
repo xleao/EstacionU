@@ -41,7 +41,7 @@ def send_welcome_email(to_email: str, name: str):
           <tr>
             <td style="padding: 30px 20px 20px 20px; text-align: center;">
               <h1 style="color: #0f172a; font-size: 24px; font-weight: bold; margin: 0 0 10px 0;">
-                &#161;Bienvenido a <span style="color: #3b82f6;">EstacionU</span>,<br>{name}!
+                &#161;Bienvenido a <a href="https://estacionu.com" target="_blank" style="color: #3b82f6; text-decoration: none;">EstacionU</a>,<br>{name}!
               </h1>
               <p style="color: #64748b; font-size: 15px; line-height: 1.5; margin: 0 0 30px 0; padding: 0 10px;">
                 Nos emociona que te unas a nuestra comunidad. Estamos listos para acompa&#241;arte en tu crecimiento profesional y conectarte con los mejores mentores.
@@ -49,7 +49,7 @@ def send_welcome_email(to_email: str, name: str):
               <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 0 auto;">
                 <tr>
                   <td align="center" style="background-color: #3b82f6; border-radius: 10px;">
-                    <a href="http://localhost:5173/login" target="_blank" style="display: inline-block; padding: 14px 28px; font-family: -apple-system, sans-serif; font-size: 15px; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 10px;">
+                    <a href="https://estacionu.com/login" target="_blank" style="display: inline-block; padding: 14px 28px; font-family: -apple-system, sans-serif; font-size: 15px; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 10px;">
                       Empezar a explorar &rarr;
                     </a>
                   </td>
@@ -98,7 +98,7 @@ def send_welcome_email(to_email: str, name: str):
         logging.error(f"Failed to send email to {to_email}: {e}")
 
 
-def send_forgot_password_email(to_email: str, name: str, reset_link: str = "http://localhost:5173/login"):
+def send_forgot_password_email(to_email: str, name: str, reset_link: str = "https://estacionu.com/login"):
     if settings.smtp_user == "TUCORREO@gmail.com":
         logging.warning("SMTP not configured. Skipping forgot password email.")
         return
@@ -287,7 +287,7 @@ def send_new_coffee_chat_email(to_email: str, mentor_name: str, student_name: st
           <table cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td align="center" style="background-color:#3b82f6;border-radius:12px;">
-                <a href="http://localhost:5173/sesiones" target="_blank"
+                <a href="https://estacionu.com/sesiones" target="_blank"
                    style="display:inline-block;padding:15px 36px;font-family:-apple-system,sans-serif;font-size:15px;color:#ffffff;text-decoration:none;font-weight:700;border-radius:12px;">
                   Gestionar Solicitud &rarr;
                 </a>

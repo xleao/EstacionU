@@ -13,46 +13,74 @@ const FeaturedMentors = () => {
     const [isHovered, setIsHovered] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
+    const [startY, setStartY] = useState(0); // Track Y axis for vertical scroll check
+    const [isScrollingVertically, setIsScrollingVertically] = useState(false);
     const animationRef = useRef(null);
 
-    // Auto-scrolling logic via requestAnimationFrame so it plays nice with drag
     useEffect(() => {
         const carousel = scrollRef.current;
         if (!carousel) return;
 
-        let scrollSpeed = 0.5; // pixel per frame, slightly slower for elegance
-        const scroll = () => {
-            if (!isDragging) {
-                if (carousel.scrollLeft >= (carousel.scrollWidth / 2)) {
-                    // Instantly snap to 0 when halfway visually
+        let scrollSpeed = 0.5;
+        let lastTimestamp = 0;
+        let reqId;
+
+        const scroll = (timestamp) => {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const deltaTime = timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
+
+            const adjustedSpeed = scrollSpeed * (deltaTime / 16.66);
+
+            // Only pause if dragging OR hovered
+            if (!isDragging && !isHovered) {
+                if (carousel.scrollLeft >= carousel.scrollWidth / 2) {
                     carousel.scrollLeft = 0;
                 } else {
-                    carousel.scrollLeft += scrollSpeed;
+                    carousel.scrollLeft += adjustedSpeed;
                 }
             }
-            animationRef.current = requestAnimationFrame(scroll);
+            reqId = requestAnimationFrame(scroll);
         };
 
-        animationRef.current = requestAnimationFrame(scroll);
-        return () => cancelAnimationFrame(animationRef.current);
-    }, [isDragging, loading]);
+        reqId = requestAnimationFrame(scroll);
+        return () => cancelAnimationFrame(reqId);
+    }, [isDragging, isHovered, loading]);
 
     const handleDragStart = (e) => {
         setIsDragging(true);
-        setStartX((e.pageX || e.touches[0].pageX) - scrollRef.current.offsetLeft);
+        setIsScrollingVertically(false);
+        const pageX = e.type.includes('touch') ? e.touches[0].pageX : e.pageX;
+        const pageY = e.type.includes('touch') ? e.touches[0].pageY : e.pageY;
+        setStartX(pageX - scrollRef.current.offsetLeft);
+        setStartY(pageY);
         setScrollLeft(scrollRef.current.scrollLeft);
     };
     const handleDragMove = (e) => {
         if (!isDragging) return;
-        // Don't prevent default on touch as it breaks native scroll completely if not careful, 
-        // but since we custom scroll, we can.
-        if (e.type !== 'touchmove') e.preventDefault();
-        const x = (e.pageX || e.touches[0].pageX) - scrollRef.current.offsetLeft;
-        const walk = (x - startX) * 2; // faster scroll with mouse drag
+
+        const pageX = e.type.includes('touch') ? e.touches[0].pageX : e.pageX;
+        const pageY = e.type.includes('touch') ? e.touches[0].pageY : e.pageY;
+
+        if (e.type.includes('touch')) {
+            const diffX = Math.abs(pageX - scrollRef.current.offsetLeft - startX);
+            const diffY = Math.abs(pageY - startY);
+
+            // If they are scrolling vertically more than horizontally, let the browser handle it
+            if (diffY > diffX && !isScrollingVertically) {
+                setIsScrollingVertically(true);
+            }
+        }
+
+        if (isScrollingVertically) return;
+
+        const x = pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX) * 2;
         scrollRef.current.scrollLeft = scrollLeft - walk;
     };
     const handleDragEnd = () => {
         setIsDragging(false);
+        setIsScrollingVertically(false);
     };
 
     useEffect(() => {
@@ -145,14 +173,16 @@ const FeaturedMentors = () => {
                 <div
                     ref={scrollRef}
                     className={`flex py-6 mentor-scroll ${isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
-                    style={{ overflowX: 'scroll', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     onMouseDown={handleDragStart}
                     onMouseMove={handleDragMove}
                     onMouseUp={handleDragEnd}
-                    onMouseLeave={handleDragEnd}
+                    onMouseLeave={() => { handleDragEnd(); setIsHovered(false); }}
+                    onMouseEnter={() => setIsHovered(true)}
                     onTouchStart={handleDragStart}
                     onTouchMove={handleDragMove}
                     onTouchEnd={handleDragEnd}
+                    onTouchCancel={handleDragEnd}
                 >
                     {carouselMentors.map((mentor, index) => (
                         <div key={`${mentor.id}-${index}`} className="w-[300px] mx-4 flex-shrink-0 transform transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01]">
