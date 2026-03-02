@@ -42,9 +42,20 @@ app.include_router(admin.router)
 from app.middleware.analytics import AnalyticsMiddleware
 app.add_middleware(AnalyticsMiddleware)
 
+@app.middleware("http")
+async def add_developer_header(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Developed-By"] = "xLeao"
+    return response
+
 @app.get("/")
 def read_root():
-    return {"message": "Bienvenido a la API de EstacionU", "status": "Connected to DB"}
+    return {
+        "message": "Bienvenido a la API de EstacionU", 
+        "status": "Connected to DB",
+        "developer": "xLeao",
+        "version": "1.0.0"
+    }
 
 from fastapi import WebSocket, WebSocketDisconnect
 from app.ws_manager import manager
