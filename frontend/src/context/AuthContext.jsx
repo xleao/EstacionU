@@ -103,8 +103,8 @@ export const AuthProvider = ({ children }) => {
 
             setUser(userData);
 
-            // If new user from Google, send to role selection page
-            if (data.is_new) {
+            // If new user from Google OR they haven't completed onboarding, send to role selection page
+            if (data.is_new || userData.universidad === 'Pendiente') {
                 navigate('/select-role');
                 return { is_new: true };
             }
