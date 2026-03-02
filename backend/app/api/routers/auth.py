@@ -92,7 +92,7 @@ async def forgot_password(request: schemas.ForgotPasswordRequest, background_tas
             data={"sub": user.correo, "purpose": "password_reset"}, 
             expires_delta=reset_token_expires
         )
-        reset_link = f"http://localhost:5173/reset-password?token={reset_token}"
+        reset_link = f"https://estacionu.com/reset-password?token={reset_token}"
         background_tasks.add_task(email_service.send_forgot_password_email, user.correo, nombre, reset_link)
     
     return {"message": "Si tu correo está registrado, recibirás un enlace de recuperación."}
