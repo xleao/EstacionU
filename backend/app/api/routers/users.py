@@ -281,6 +281,11 @@ async def update_user_role(
     if profile:
         profile.rol = role_data.role
 
+    # Update education (this serves as the completion flag)
+    education = current_user.educacion[0] if current_user.educacion else None
+    if education:
+        education.universidad = "Completada" # No longer 'Pendiente'
+
     # If mentor, create MentorProfile if not exists
     if role_data.role == 'mentor':
         mentor_profile = current_user.mentor_perfil
