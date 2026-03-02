@@ -14,6 +14,7 @@ import StudentDashboardPage from './pages/StudentDashboardPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import RoleSelectionPage from './pages/RoleSelectionPage';
 import './index.css';
 
 import ScrollToTop from './components/ScrollToTop';
@@ -41,6 +42,14 @@ function App() {
                                 <Route path="/register" element={<RegisterPage />} />
                                 <Route path="/reporte" element={<ReportPage />} />
                                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                                <Route
+                                    path="/select-role"
+                                    element={
+                                        <ProtectedRoute>
+                                            <RoleSelectionPage />
+                                        </ProtectedRoute>
+                                    }
+                                />
                                 <Route
                                     path="/mentores"
                                     element={

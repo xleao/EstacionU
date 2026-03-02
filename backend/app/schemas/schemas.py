@@ -69,6 +69,9 @@ class ResetPasswordConfirm(BaseModel):
 class GoogleLoginRequest(BaseModel):
     credential: str
 
+class RoleSelection(BaseModel):
+    role: str  # 'estudiante' or 'mentor'
+
 
 class AppointmentCreate(BaseModel):
     mentor_user_id: int

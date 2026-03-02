@@ -102,6 +102,14 @@ export const AuthProvider = ({ children }) => {
             const userData = await userRes.json();
 
             setUser(userData);
+
+            // If new user from Google, send to role selection page
+            if (data.is_new) {
+                navigate('/select-role');
+                return { is_new: true };
+            }
+
+            // Existing user — go to their dashboard
             const role = (userData.role || '').toLowerCase();
             if (['admin', 'administrador'].includes(role)) {
                 navigate('/admin/dashboard');
@@ -110,7 +118,7 @@ export const AuthProvider = ({ children }) => {
             } else {
                 navigate('/student/dashboard');
             }
-            return { is_new: data.is_new };
+            return { is_new: false };
         } else {
             localStorage.removeItem('token');
             setUser(null);

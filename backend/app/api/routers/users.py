@@ -263,6 +263,34 @@ async def update_password(
     db.commit()
     return {"message": "Contraseña actualizada exitosamente"}
 
+@router.put("/users/me/role")
+async def update_user_role(
+    role_data: schemas.RoleSelection,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    allowed_roles = ['estudiante', 'mentor']
+    if role_data.role not in allowed_roles:
+        raise HTTPException(status_code=400, detail="Rol no válido. Debe ser 'estudiante' o 'mentor'.")
+
+    # Update user type
+    current_user.tipo_usuario = role_data.role
+    
+    # Update profile role
+    profile = current_user.perfil
+    if profile:
+        profile.rol = role_data.role
+
+    # If mentor, create MentorProfile if not exists
+    if role_data.role == 'mentor':
+        mentor_profile = current_user.mentor_perfil
+        if not mentor_profile:
+            mentor_profile = models.MentorProfile(usuario_id=current_user.id)
+            db.add(mentor_profile)
+
+    db.commit()
+    return {"message": "Rol actualizado exitosamente", "role": role_data.role}
+
 @router.get("/mentors")
 def get_mentors(db: Session = Depends(get_db)):
     users = db.query(models.User).filter(models.User.tipo_usuario == "mentor").all()
