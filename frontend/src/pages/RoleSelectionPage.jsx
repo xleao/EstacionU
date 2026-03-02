@@ -78,7 +78,7 @@ const RoleSelectionPage = () => {
     };
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-hidden">
+        <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-hidden">
             <WaveBackground />
 
             <main className="flex-grow flex items-center justify-center p-4 relative z-10 w-full">
@@ -115,8 +115,8 @@ const RoleSelectionPage = () => {
                                         key={role.id}
                                         onClick={() => setSelectedRole(role.id)}
                                         className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-300 group relative overflow-hidden ${isSelected
-                                                ? `${role.selectedBorder} ${role.bgLight} ${role.bgDark} shadow-lg scale-[1.02]`
-                                                : `border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800/50 hover:shadow-md`
+                                            ? `${role.selectedBorder} ${role.bgLight} ${role.bgDark} shadow-lg scale-[1.02]`
+                                            : `border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800/50 hover:shadow-md`
                                             }`}
                                     >
                                         {/* Selected indicator */}

@@ -10,7 +10,7 @@ const Footer = () => {
     const [showPrivacy, setShowPrivacy] = useState(false);
 
     // Hide footer on auth pages to avoid scrolling/clutter
-    if (['/login', '/register', '/cambiar-contrasena', '/reset-password'].includes(location.pathname)) {
+    if (['/login', '/register', '/cambiar-contrasena', '/reset-password', '/select-role'].includes(location.pathname)) {
         return null;
     }
 
