@@ -119,47 +119,222 @@ Deja la terminal del backend abierta y abre **una terminal nueva**.
 
 ---
 
-## 🌐 Guía de Despliegue en Producción (Deployment)
+## 🌐 GUÍA DEFINITIVA DE DESPLIEGUE EN PRODUCCIÓN (VPS ELASTIKA)
 
-Para lanzar el proyecto a la red pública (Ej. a un VPS como DigitalOcean, Linode, Elastika o plataformas cloud como AWS / Render).
+Esta guía asume que acabas de encender un servidor VPS (Ubuntu) nuevo (en plataformas como Elastika) y te has conectado vía SSH usando el usuario `root`.
 
-### Despliegue del Backend
-FastAPI se sirve detrás de un proxy inverso mediante `NGINX` o directamente manejado como servicio systemd.
-1. Git pull de los cambios sobre el VPS.
-2. Levantar el entorno virtual e instalar con `pip install -r requirements.txt`.
-3. Configurar `.env` con las variables de producción.
-4. Para producción persistente, montar un archivo en **Systemd** (`/etc/systemd/system/estacionu.service`):
-   ```ini
-   [Unit]
-   Description=EstacionU Backend FastAPI Server
-   After=network.target
+### FASE 1: Preparación del Servidor 🛠️
+Lo primero es actualizar la máquina e instalar los programas que van a hacer funcionar todo.
 
-   [Service]
-   User=root
-   WorkingDirectory=/ruta/al/proyecto/EstacionU/backend
-   Environment="PATH=/ruta/al/proyecto/EstacionU/.venv/bin"
-   ExecStart=/ruta/al/proyecto/EstacionU/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+**1️⃣ Actualizar el sistema:**
+```bash
+apt update && apt upgrade -y
+```
 
-   [Install]
-   WantedBy=multi-user.target
-   ```
-5. Iniciar y activar el servicio: `systemctl start estacionu` y `systemctl enable estacionu`.
+**2️⃣ Instalar herramientas básicas y la Base de Datos:**
+Vamos a instalar Nginx (el servidor web que muestra la página), PostgreSQL (la base de datos) y Git (para descargar el código).
+```bash
+apt install git curl nginx postgresql postgresql-contrib -y
+```
 
-### Despliegue del Frontend
-React + Vite genera un empaquetado final HTML/Minified JS listo para distribución estática.
-1. Compilar el archivo de distribución:
-   ```bash
-   cd frontend
-   npm run build
-   ```
-2. Esto generará la carpeta `/dist`.
-3. En **NGINX**, apuntar la raíz del servidor virtual apuntando al path donde reside esta carpeta web y configurar el ruteo `/api/` y proxy inverso al puerto 8000 de FastAPI.
+**3️⃣ Instalar Python (Para el Backend):**
+Instalaremos Python y las herramientas para crear entornos virtuales.
+```bash
+apt install python3 python3-venv python3-pip -y
+```
+
+**4️⃣ Instalar Node.js (Para el Frontend en React/Vite):**
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+```
+
+### FASE 2: Configuración de la Base de Datos (PostgreSQL) 🗄️
+Tenemos que crear el espacio donde se guardarán los usuarios, mentores y citas.
+
+**1️⃣ Entrar al gestor de la base de datos:**
+```bash
+sudo -u postgres psql
+```
+
+**2️⃣ Crear la base de datos y el administrador:**
+Copia y pega estas líneas una por una (asegúrate de cambiar la contraseña si quieres otra):
+```sql
+CREATE DATABASE estacion_u;
+CREATE USER postgres WITH ENCRYPTED PASSWORD 'Est@cionu+2025';
+GRANT ALL PRIVILEGES ON DATABASE estacion_u TO postgres;
+\q
+```
+*(El `\q` al final sirve para salir de la consola de postgres).*
+
+### FASE 3: Descargar el Código (GitHub) 📥
+Vamos a traer tu proyecto al servidor.
+
+**1️⃣ Clonar el repositorio:**
+```bash
+cd ~
+git clone https://github.com/TU_USUARIO_DE_GITHUB/EstacionU.git
+```
+*(No olvides cambiar la URL por el link real de tu GitHub).*
+
+### FASE 4: Levantar el Backend (FastAPI) ⚙️
+El backend es el "cerebro" y necesita ejecutarse constantemente.
+
+**1️⃣ Crear el entorno virtual y activarlo:**
+```bash
+cd ~/EstacionU/backend
+python3 -m venv venv
+source venv/bin/activate
+```
+
+**2️⃣ Instalar dependencias de Python:**
+Aquí instalamos las librerías necesarias.
+```bash
+pip install -r requirements.txt
+pip install requests google-auth psycopg2-binary
+```
+
+**3️⃣ Configurar las contraseñas secretas (.env):**
+Este archivo guarda las credenciales. Lo crearemos directamente en el servidor.
+```bash
+nano .env
+```
+Copia este texto adentro, reemplazando con tus datos reales. **OJO:** Como la contraseña de la base de datos tiene un arroba `@`, en vez de poner `@` debes escribir `%40` en la línea de `DATABASE_URL` (Ej: `Est%40cionu+2025`):
+```env
+DATABASE_URL=postgresql://postgres:TU_PASSWORD_AQUI@localhost:5432/estacion_u
+SECRET_KEY=tu_super_clave_secreta
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=52560000
+
+# Credenciales de Email (Gmail con contraseña de aplicación)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=tu_correo@gmail.com
+SMTP_PASSWORD=tu_contraseña_de_aplicacion
+SMTP_FROM_NAME=EstacionU+
+
+# Botón de Google Authentication
+GOOGLE_CLIENT_ID=codigo-de-google.apps.googleusercontent.com
+```
+*Para guardar y salir en Nano, presiona `Ctrl + O`, luego `Enter`, y finalmente `Ctrl + X`.*
+
+**4️⃣ Crear un "Servicio" para que el Backend nunca se apague:**
+Si cierras la terminal negra ahora, el backend se apaga. Para evitarlo creamos un servicio de sistema.
+```bash
+nano /etc/systemd/system/estacionu.service
+```
+Pega esto adentro:
+```ini
+[Unit]
+Description=Backend de EstacionU (FastAPI con Uvicorn)
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/root/EstacionU/backend
+Environment="PATH=/root/EstacionU/backend/venv/bin"
+ExecStart=/root/EstacionU/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+*Guarda con `Ctrl + O`, `Enter`, `Ctrl + X`.*
+
+**5️⃣ Encender el backend permanentemente:**
+```bash
+systemctl daemon-reload
+systemctl start estacionu
+systemctl enable estacionu
+```
+
+### FASE 5: Construir el Frontend (React) 🖥️
+Tenemos que transformar el código de React en una página web final que Nginx pueda entender.
+```bash
+cd ~/EstacionU/frontend
+npm install
+npm run build
+```
+*(Al finalizar, se creará una carpeta oculta llamada `dist/` que contiene la web lista).*
+
+### FASE 6: Configurar el Servidor Web (Nginx) 🌐
+Le diremos a nuestro servidor que cuando alguien visite `estacionu.com`, le muestre la carpeta `dist/` (frontend) y que cualquier función mágica empiece por `/api/` la envíe al backend.
+
+**1️⃣ Crear el archivo de Nginx:**
+```bash
+nano /etc/nginx/sites-available/estacionu
+```
+
+**2️⃣ Pegar la configuración:**
+(Cambia `estacionu.com` por tu dominio si es distinto):
+```nginx
+server {
+    listen 80;
+    server_name estacionu.com www.estacionu.com;
+
+    # Dirección al Frontend (React)
+    location / {
+        root /root/EstacionU/frontend/dist;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Dirección al Backend (FastAPI)
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+*Guarda con `Ctrl + O`, `Enter`, `Ctrl + X`.*
+
+**3️⃣ Activar la web y reiniciar Nginx:**
+```bash
+ln -s /etc/nginx/sites-available/estacionu /etc/nginx/sites-enabled/
+systemctl restart nginx
+```
+
+### FASE 7: Seguridad y el "Candadito Verde" (SSL Gratis) 🔒
+Google exige usar `https://` para dejarte usar su botón de inicio de sesión. Lo instalamos en 1 minuto:
+```bash
+apt update
+apt install certbot python3-certbot-nginx -y
+certbot --nginx -d estacionu.com -d www.estacionu.com
+```
+Te hará unas preguntas:
+1. Pon tu correo.
+2. Acepta términos (A).
+3. Compartir correo (N).
+4. **MUY IMPORTANTE:** Te preguntará si quieres Redireccionar (Opciones 1 o 2). Pon el **número 2** para forzar siempre una conexión segura.
+
+### FASE 8: Configuración Final de Google (OAuth) 🔑
+Para que el inicio de sesión funcione en la web en vivo:
+1. Ve a tu consola de Google Cloud API.
+2. Entra a las credenciales de tu proyecto.
+3. En "Orígenes de JavaScript autorizados", pon: `https://estacionu.com`
+4. En "URIs de redireccionamiento autorizados", pon: `https://estacionu.com`
 
 ---
 
-## 👥 Árbol de Accesos y Roles del Sistema
+## 🛠️ EXTRA: Cómo actualizar tu web en el futuro
 
-El sistema implementa tres perfiles técnicos. La pantalla principal determina este enrutamiento seguro de react-router a partir de la decodificación del Token JWT emitido.
-*   👨‍🎓 **Estudiante/Mentee:** Exploración de directotio general, solicitud de "Coffee Chats", subida de CV básico y feedback asíncrono de sesión.
-*   🚀 **Mentor/Egresado:** Dashboard especializado para gestionar perfiles laborales con la facultad (logo, empresa actual, currícula biográfica), selección de bloques de disponibilidad horaria y panel de confirmación/denegación de los CaffeChats requeridos.
-*   ⚙️ **Administrador (SuperUser):** Panel de moderación absoluta de la plataforma para validar actividad de usuarios registrados e incidencias directas.
+Cada vez que hagas un cambio en tu computadora y lo subas a GitHub (`git push`), debes entrar al servidor (terminal negra) y hacer esto:
+
+**Si el cambio fue visual (Frontend / React):**
+```bash
+cd ~/EstacionU
+git pull origin main
+cd frontend
+npm run build
+```
+
+**Si el cambio fue lógico (Backend / Python / Correos):**
+```bash
+cd ~/EstacionU
+git pull origin main
+systemctl restart estacionu
+```
+
+¡Y listo! Con esto tendrás la plataforma profesionalmente desplegada y a prueba de todo. 🚀
