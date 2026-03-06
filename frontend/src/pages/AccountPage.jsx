@@ -5,6 +5,15 @@ import LakeBackground from '../components/LakeBackground';
 import { useAuth } from '../context/AuthContext';
 import { SECTOR_OPTIONS, AREA_OPTIONS, CustomCombobox } from '../components/CustomCombobox';
 
+const UNIVERSITY_OPTIONS = ['UNI', 'Otros'];
+const CAREER_OPTIONS = [
+    'Ingeniería Industrial',
+    'Ingeniería de Inteligencia Artificial',
+    'Ingeniería de Software',
+    'Ingeniería de Sistemas',
+    'Otros'
+];
+
 const AccountPage = () => {
     const { user, refreshUser } = useAuth();
 
@@ -875,10 +884,9 @@ const AccountPage = () => {
                                     <div className="p-8 space-y-5">
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Institución / Centro de Estudios</label>
-                                            <input
+                                            <CustomCombobox
                                                 name="universidad"
-                                                className="w-full rounded-2xl border border-[#D8D2C3] dark:border-slate-700/50 bg-[#F9FAFB] dark:bg-slate-900/60 px-5 py-3 text-sm font-semibold text-[#111417] dark:text-white focus:bg-[#FFFFFF] dark:focus:bg-slate-800 dark:bg-slate-800/80 dark:backdrop-blur-xl focus:ring-2 focus:ring-[#3C96E0]/20 focus:border-[#3C96E0] dark:focus:border-primary outline-none transition-all placeholder:text-slate-400 dark:text-slate-500"
-                                                type="text"
+                                                options={UNIVERSITY_OPTIONS}
                                                 placeholder="Ej. UNI, Cibertec, UPC..."
                                                 value={newHistory.universidad}
                                                 onChange={handleNewHistoryChange}
@@ -886,10 +894,9 @@ const AccountPage = () => {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Carrera / Programa</label>
-                                            <input
+                                            <CustomCombobox
                                                 name="carrera"
-                                                className="w-full rounded-2xl border border-[#D8D2C3] dark:border-slate-700/50 bg-[#F9FAFB] dark:bg-slate-900/60 px-5 py-3 text-sm font-semibold text-[#111417] dark:text-white focus:bg-[#FFFFFF] dark:focus:bg-slate-800 dark:bg-slate-800/80 dark:backdrop-blur-xl focus:ring-2 focus:ring-[#3C96E0]/20 focus:border-[#3C96E0] dark:focus:border-primary outline-none transition-all placeholder:text-slate-400 dark:text-slate-500"
-                                                type="text"
+                                                options={CAREER_OPTIONS}
                                                 placeholder="Ej. Ing. de Sistemas, Diseño Gráfico..."
                                                 value={newHistory.carrera}
                                                 onChange={handleNewHistoryChange}
