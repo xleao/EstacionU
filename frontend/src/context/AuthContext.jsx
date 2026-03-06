@@ -28,8 +28,8 @@ export const AuthProvider = ({ children }) => {
                     const isOnboardingPath = onboardingPaths.includes(currentPath) || currentPath === '/';
 
                     if (!isOnboardingPath && userData.onboarding_completo === false) {
-                        const userRole = (userData.role || '').toLowerCase();
-                        const hasNoRole = !userRole || userRole === 'user' || userRole === 'usuario';
+                        const userRole = (userData.role || userData.tipo_usuario || '').toLowerCase();
+                        const hasNoRole = !userRole || userRole === 'user' || userRole === 'usuario' || userRole === '';
                         if (hasNoRole) {
                             navigate('/select-role', { replace: true });
                         } else {
@@ -80,8 +80,8 @@ export const AuthProvider = ({ children }) => {
             const userData = await userRes.json();
             setUser(userData);
 
-            const userRole = (userData.role || '').toLowerCase();
-            const hasNoRole = !userRole || userRole === 'user' || userRole === 'usuario';
+            const userRole = (userData.role || userData.tipo_usuario || '').toLowerCase();
+            const hasNoRole = !userRole || userRole === 'user' || userRole === 'usuario' || userRole === '';
 
             if (hasNoRole) {
                 navigate('/select-role');
@@ -224,25 +224,19 @@ export const AuthProvider = ({ children }) => {
 
         if (userRes.ok) {
             const userData = await userRes.json();
-
             setUser(userData);
 
-            // Brand new user from Google → go to role selection first
-            if (data.is_new) {
-                navigate('/select-role');
-                return { is_new: true };
-            }
+            const userRole = (userData.role || userData.tipo_usuario || '').toLowerCase();
+            const hasNoRole = !userRole || userRole === 'user' || userRole === 'usuario' || userRole === '';
 
-            const userRole = (userData.role || '').toLowerCase();
-            const hasNoRole = !userRole || userRole === 'user' || userRole === 'usuario';
-
+            // ALWAYS check role first — if no role assigned, go to role selection
             if (hasNoRole) {
                 navigate('/select-role');
                 return { is_new: true };
             }
 
-            // User selected a role but hasn't completed their profile yet
-            if (!userData.onboarding_completo) {
+            // Has a role but hasn't completed onboarding profile
+            if (userData.onboarding_completo === false || !userData.onboarding_completo) {
                 navigate('/complete-profile');
                 return { is_new: true };
             }

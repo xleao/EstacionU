@@ -18,10 +18,10 @@ const ProtectedRoute = ({ children }) => {
         return <Navigate to="/" state={{ from: location }} replace />;
     }
 
-    const role = (user.role || '').toLowerCase();
+    const role = (user.role || user.tipo_usuario || '').toLowerCase();
     const path = location.pathname.toLowerCase();
 
-    const hasNoRole = !role || role === 'user' || role === 'usuario';
+    const hasNoRole = !role || role === 'user' || role === 'usuario' || role === '';
 
     // 1. If user has NO ROLE, they can only be on /select-role
     if (hasNoRole) {
