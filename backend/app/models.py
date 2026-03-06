@@ -91,6 +91,7 @@ class MentorProfile(Base):
     horario_sugerido = Column(String, nullable=True)
     empresa = Column(String, nullable=True)
     url_logo_empresa = Column(String, nullable=True)
+    bloqueado_destacado = Column(Boolean, default=False)
 
     usuario = relationship("User", back_populates="mentor_perfil")
     
@@ -99,6 +100,7 @@ class MentorProfile(Base):
     grados = relationship("Grade", secondary=mentor_grado, backref="mentores")
     temas = relationship("MentorTema", backref="mentor")
     disponibilidades = relationship("MentorAvailability", back_populates="mentor", cascade="all, delete-orphan")
+    solicitudes_destacado = relationship("DestacadoSolicitud", back_populates="mentor_perfil", cascade="all, delete-orphan")
     
     # Appointments where user is mentor
     citas_mentor = relationship("Appointment", foreign_keys="[Appointment.mentor_id]", back_populates="mentor")
@@ -157,6 +159,21 @@ class Appointment(Base):
 
     mentee = relationship("User", foreign_keys=[usuario_mentee_id], back_populates="citas_mentee")
     mentor = relationship("MentorProfile", foreign_keys=[mentor_id], back_populates="citas_mentor")
+
+
+# --- Solicitudes Mentor Destacado ---
+
+class DestacadoSolicitud(Base):
+    __tablename__ = "destacado_solicitudes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    mentor_perfil_id = Column(Integer, ForeignKey("perfiles_mentor.id"), nullable=False)
+    status = Column(String, default="pendiente")  # 'pendiente' | 'aprobado' | 'rechazado'
+    fecha_solicitud = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_revision = Column(DateTime(timezone=True), nullable=True)
+    notas_admin = Column(Text, nullable=True)
+
+    mentor_perfil = relationship("MentorProfile", back_populates="solicitudes_destacado")
 
 
 # --- Analytics / Visitor Tracking ---

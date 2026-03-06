@@ -3,134 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import LakeBackground from '../components/LakeBackground';
 import { useAuth } from '../context/AuthContext';
-
-export const SECTOR_OPTIONS = [
-    "Agriculture, Livestock & Agribusiness",
-    "Consulting & Professional Services",
-    "Consumer & Retail",
-    "Corporate Services & Holding Companies",
-    "Education & Research",
-    "Energy, Utilities & Natural Resources",
-    "Financial Services",
-    "Government, Public Sector & Nonprofits",
-    "Healthcare & Life Sciences",
-    "Hospitality & Tourism",
-    "Industrial / Manufacturing",
-    "Media, Entertainment & Communications",
-    "Real Estate, Construction & Infrastructure",
-    "Supply Chain, Logistics & Transportation",
-    "Technology",
-    "Otros"
-];
-
-export const AREA_OPTIONS = [
-    "Customer Service and Support",
-    "Data and Analytics",
-    "Engineering and Technology",
-    "Entrepeneurship",
-    "Finance/Accounting",
-    "General Management",
-    "Human Resources",
-    "Marketing/Communications",
-    "Operations/SCM",
-    "Product Management",
-    "Project Management",
-    "Research/Academia",
-    "Sales/Business Development",
-    "Strategy/Consulting",
-    "Otros"
-];
-
-const CustomCombobox = ({ name, options, placeholder, value, onChange, disabled }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const wrapperRef = useRef(null);
-
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const filteredOptions = options.filter(opt =>
-        opt.toLowerCase().includes((value || '').toLowerCase())
-    );
-
-    return (
-        <div ref={wrapperRef} className="relative w-full">
-            <div className="relative">
-                <input
-                    name={name}
-                    className="w-full rounded-2xl border bg-[#F4FAFF] dark:bg-slate-900/80 border-[#3C96E0]/40 dark:border-primary/40 px-5 py-3 pr-10 text-sm font-semibold text-[#111417] dark:text-white focus:ring-2 focus:ring-[#3C96E0]/30 focus:border-[#3C96E0] dark:focus:border-primary focus:bg-[#FFFFFF] dark:focus:bg-slate-800 dark:bg-slate-800/80 dark:backdrop-blur-xl shadow-sm shadow-[#3C96E0]/5 outline-none transition-all placeholder:text-slate-400 dark:text-slate-500 disabled:bg-[#F9FAFB] dark:disabled:bg-slate-900/40 dark:bg-slate-900/60 disabled:border-transparent disabled:text-[#111417] dark:disabled:text-slate-500 disabled:shadow-none disabled:opacity-100 disabled:cursor-default"
-                    type="text"
-                    placeholder={placeholder}
-                    value={value}
-                    onChange={(e) => {
-                        onChange(e);
-                        setIsOpen(true);
-                    }}
-                    onClick={(e) => {
-                        if (!disabled) setIsOpen(true);
-                    }}
-                    disabled={disabled}
-                    autoComplete="off"
-                />
-                <div
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center p-1.5 rounded-full transition-colors ${disabled ? 'text-slate-400/50 cursor-not-allowed' : 'text-slate-400 hover:text-[#3C96E0] hover:bg-[#3C96E0]/10 dark:hover:text-primary dark:hover:bg-primary/20 cursor-pointer'}`}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        if (!disabled) setIsOpen(!isOpen);
-                    }}
-                >
-                    <span className={`material-icons text-[20px] transition-transform duration-300 pointer-events-none ${isOpen ? 'rotate-180 text-[#3C96E0] dark:text-primary' : ''}`}>
-                        expand_more
-                    </span>
-                </div>
-            </div>
-            {isOpen && !disabled && (
-                <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
-                    <ul className="max-h-60 overflow-y-auto custom-scrollbar p-2 space-y-1">
-                        {filteredOptions.length > 0 ? (
-                            filteredOptions.map((opt, idx) => (
-                                <li
-                                    key={idx}
-                                    className={`px-4 py-2.5 text-sm font-semibold rounded-xl cursor-pointer transition-all flex items-center justify-between group
-                                        ${value === opt
-                                            ? 'bg-[#F4FAFF] dark:bg-slate-700/80 text-[#3C96E0] dark:text-primary'
-                                            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-[#111417] dark:hover:text-white'
-                                        }`}
-                                    onClick={() => {
-                                        if (opt === 'Otros') {
-                                            onChange({ target: { name, value: '' } });
-                                        } else {
-                                            onChange({ target: { name, value: opt } });
-                                        }
-                                        setIsOpen(false);
-                                    }}
-                                >
-                                    {opt}
-                                    {value === opt && <span className="material-icons text-[18px]">check_circle</span>}
-                                    {opt === 'Otros' && <span className="material-icons text-[18px] opacity-70">edit</span>}
-                                </li>
-                            ))
-                        ) : (
-                            <li className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400 text-center flex flex-col items-center gap-2">
-                                <span className="material-icons text-slate-300 dark:text-slate-600 text-[32px] mb-1">edit_note</span>
-                                <div>
-                                    <span className="font-bold text-[#111417] dark:text-white">"{value}"</span>
-                                    <p className="mt-1 text-xs">se guardará como personalizado</p>
-                                </div>
-                            </li>
-                        )}
-                    </ul>
-                </div>
-            )}
-        </div>
-    );
-};
+import { SECTOR_OPTIONS, AREA_OPTIONS, CustomCombobox } from '../components/CustomCombobox';
 
 const AccountPage = () => {
     const { user, refreshUser } = useAuth();
@@ -183,12 +56,14 @@ const AccountPage = () => {
         };
     }, [isAddHistoryOpen]);
 
-    const [educationList, setEducationList] = useState([{
-        universidad: user?.universidad || '',
-        carrera: user?.carrera || '',
-        anioInicio: user?.anio_inicio || '',
-        anioFin: user?.anio_fin === -1 ? 'cursando' : (user?.anio_fin || '')
-    }].filter(edu => edu.universidad || edu.carrera));
+    const initialEducation = user?.universidad && user?.universidad !== 'Pendiente' && user?.universidad !== 'Completada' ? [{
+        universidad: user.universidad,
+        carrera: user.carrera || '',
+        anioInicio: user.anio_inicio || '',
+        anioFin: user.anio_fin === -1 ? 'cursando' : (user.anio_fin || '')
+    }] : [];
+
+    const [educationList, setEducationList] = useState(initialEducation);
 
     const handleNewHistoryChange = (e) => {
         setNewHistory({ ...newHistory, [e.target.name]: e.target.value });
@@ -284,6 +159,15 @@ const AccountPage = () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        if (!['image/jpeg', 'image/png'].includes(file.type)) {
+            setStatusMessage({ type: 'error', text: 'Solo se permiten imágenes PNG o JPEG.' });
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            setStatusMessage({ type: 'error', text: 'La foto excede el límite de 50MB.' });
+            return;
+        }
+
         setImageUploadLoading(true);
         const formData = new FormData();
         formData.append('file', file);
@@ -314,9 +198,44 @@ const AccountPage = () => {
         }
     };
 
+    const handleProfilePictureDelete = async (e) => {
+        e.stopPropagation();
+        setImageUploadLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/users/me/profile-picture', {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                setStatusMessage({ type: 'success', text: '¡Foto de perfil eliminada!' });
+                if (refreshUser) refreshUser();
+            } else {
+                setStatusMessage({ type: 'error', text: 'Error al eliminar la foto.' });
+            }
+        } catch (error) {
+            setStatusMessage({ type: 'error', text: 'Error de conexión.' });
+        } finally {
+            setImageUploadLoading(false);
+            setTimeout(() => setStatusMessage(null), 3000);
+        }
+    };
+
     const handleCompanyLogoChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        if (!['image/jpeg', 'image/png'].includes(file.type)) {
+            setStatusMessage({ type: 'error', text: 'Solo se permiten imágenes PNG o JPEG.' });
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            setStatusMessage({ type: 'error', text: 'El logo excede el límite de 50MB.' });
+            return;
+        }
 
         setCompanyLogoLoading(true);
         const uploadData = new FormData();
@@ -456,19 +375,33 @@ const AccountPage = () => {
                                         <input
                                             id="profile-image-input"
                                             type="file"
-                                            accept="image/*"
+                                            accept="image/jpeg, image/png"
                                             className="hidden"
                                             onChange={handleFileChange}
                                         />
                                         {isEditing && (
-                                            <button
-                                                onClick={handleImageClick}
-                                                className="text-sm font-bold text-[#3C96E0] dark:text-primary hover:text-[#2A86D1] transition-colors animate-in fade-in"
-                                                type="button"
-                                                disabled={imageUploadLoading}
-                                            >
-                                                {imageUploadLoading ? 'Subiendo...' : 'Cambiar foto'}
-                                            </button>
+                                            <div className="flex flex-col items-center gap-1.5 animate-in fade-in">
+                                                <button
+                                                    onClick={handleImageClick}
+                                                    className="text-sm font-bold text-[#3C96E0] dark:text-primary hover:text-[#2A86D1] transition-colors"
+                                                    type="button"
+                                                    disabled={imageUploadLoading}
+                                                >
+                                                    {imageUploadLoading ? 'Subiendo...' : 'Cambiar foto'}
+                                                </button>
+                                                {user?.url_foto && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleProfilePictureDelete}
+                                                        className="text-[11px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition-colors bg-red-50 px-2 py-1 rounded-md"
+                                                        disabled={imageUploadLoading}
+                                                    >
+                                                        <span className="material-icons text-[14px]">delete</span>
+                                                        Eliminar
+                                                    </button>
+                                                )}
+                                                <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">PNG/JPEG, Max 50MB</span>
+                                            </div>
                                         )}
                                     </div>
 
@@ -610,8 +543,8 @@ const AccountPage = () => {
                             </div>
                         </section>
 
-                        {/* Perfil de Mentor (Solo para Mentores) */}
-                        {user?.role === 'mentor' && (
+                        {/* Perfil de Mentor (Solo para Mentores Destacados) */}
+                        {user?.role === 'mentor' && user?.destacado === true && (
                             <section className="profile-section bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-700/50 overflow-hidden relative z-10 hover:shadow-lg hover:shadow-primary/5 transition-all duration-500" style={{ animationDelay: '0.15s' }}>
                                 <div className="px-7 py-5 border-b border-[#D8D2C3]/30 dark:border-slate-700/50 flex justify-between items-center relative z-10">
                                     <h2 className="text-xl font-bold flex items-center gap-2 text-[#111417] dark:text-white">
@@ -659,17 +592,7 @@ const AccountPage = () => {
                                             />
                                         </div>
 
-                                        <div className="space-y-2 md:col-span-2">
-                                            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nota adicional de disponibilidad</label>
-                                            <input
-                                                name="horario_sugerido"
-                                                className="w-full rounded-2xl border bg-[#F4FAFF] dark:bg-slate-900/80 border-[#3C96E0]/40 dark:border-primary/40 px-5 py-3 text-sm font-semibold text-[#111417] dark:text-white focus:ring-2 focus:ring-[#3C96E0]/30 focus:border-[#3C96E0] dark:focus:border-primary focus:bg-[#FFFFFF] dark:focus:bg-slate-800 dark:bg-slate-800/80 dark:backdrop-blur-xl shadow-sm shadow-[#3C96E0]/5 outline-none transition-all placeholder:text-slate-400 dark:text-slate-500 disabled:bg-[#F9FAFB] dark:disabled:bg-slate-900/40 dark:bg-slate-900/60 disabled:border-transparent disabled:text-[#111417] dark:disabled:text-slate-500 dark:text-white disabled:shadow-none disabled:opacity-100 disabled:cursor-default"
-                                                type="text"
-                                                placeholder="Ej. SÁBADO Y DOMINGO 6PM - 10PM"
-                                                value={formData.horario_sugerido}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
+
 
                                         {/* Empresa Section */}
                                         <div className="space-y-4 md:col-span-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
@@ -711,10 +634,28 @@ const AccountPage = () => {
                                                     <input
                                                         id="company-logo-input"
                                                         type="file"
-                                                        accept="image/*"
+                                                        accept="image/jpeg, image/png"
                                                         className="hidden"
                                                         onChange={handleCompanyLogoChange}
                                                     />
+                                                    {isEditing && (
+                                                        <div className="flex flex-col items-center gap-1.5">
+                                                            {formData.url_logo_empresa && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setFormData(prev => ({ ...prev, url_logo_empresa: '' }));
+                                                                    }}
+                                                                    className="text-[11px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition-colors bg-red-50 px-2 py-1 rounded-md"
+                                                                >
+                                                                    <span className="material-icons text-[14px]">delete</span>
+                                                                    Eliminar
+                                                                </button>
+                                                            )}
+                                                            <span className="text-[9px] text-slate-400 font-medium whitespace-nowrap">PNG/JPEG, Max 50MB</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 {/* Company Name */}
                                                 <div className="flex-grow w-full space-y-2">

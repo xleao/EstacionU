@@ -5,9 +5,10 @@ import LakeBackground from '../components/LakeBackground';
 import { useAuth } from '../context/AuthContext';
 import { MentorCard } from './MentorsPage';
 import HelpCenterModal from '../components/HelpCenterModal';
+import MentorDestacadoModal from '../components/MentorDestacadoModal';
 
 const MentorDashboardPage = () => {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [showBanner, setShowBanner] = useState(false);
     const [requests, setRequests] = useState([]);
@@ -15,6 +16,7 @@ const MentorDashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [showPreview, setShowPreview] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
+    const [showDestacadoModal, setShowDestacadoModal] = useState(false);
     const [error, setError] = useState('');
 
     const formatShortName = (fullName) => {
@@ -104,6 +106,12 @@ const MentorDashboardPage = () => {
         } catch (err) { console.error(err); }
     };
 
+    const handleApplyDestacado = () => {
+        setShowDestacadoModal(true);
+    };
+
+
+
     const pendingRequests = requests.filter(r => r.status === 'pendiente');
     const otherRequests = requests.filter(r => r.status !== 'pendiente');
 
@@ -180,6 +188,18 @@ const MentorDashboardPage = () => {
                     .mentor-card-enter {
                         animation: mentorCardEnter 0.6s ease-out both;
                     }
+                    @keyframes spin-pulse {
+                        0% { transform: rotate(0deg) scale(1); }
+                        50% { transform: rotate(180deg) scale(1.2); }
+                        100% { transform: rotate(360deg) scale(1); }
+                    }
+                    @keyframes shimmer {
+                        from { transform: translateX(-100%); }
+                        to { transform: translateX(100%); }
+                    }
+                    .animate-spin-pulse {
+                        animation: spin-pulse 2s infinite ease-in-out;
+                    }
                 `}</style>
 
                 {/* Incomplete Profile Banner */}
@@ -249,7 +269,36 @@ const MentorDashboardPage = () => {
                             </div>
                             <p className="text-slate-400 mt-1 font-medium text-sm">Aquí tienes un resumen de tu actividad exclusiva como egresado.</p>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 items-center flex-wrap">
+                            {user?.bloqueado_destacado ? (
+                                <div className="flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-800/50 text-xs font-bold cursor-default max-w-[200px]">
+                                    <span className="material-icons text-[18px]">block</span>
+                                    Acceso Restringido
+                                </div>
+                            ) : user?.destacado ? (
+                                <div className="group/golden relative overflow-hidden flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-400 text-white rounded-xl shadow-lg shadow-amber-500/20 text-sm font-bold cursor-default border border-amber-300">
+                                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                                    <span className="material-icons text-[20px] animate-pulse">workspace_premium</span>
+                                    Mentor Destacado
+                                </div>
+                            ) : user?.solicitud_status === 'pendiente' ? (
+                                <div
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold cursor-default"
+                                    title="Tu solicitud está siendo revisada por el equipo"
+                                >
+                                    <span className="material-icons text-[20px] animate-spin-pulse">hourglass_empty</span>
+                                    <span>Solicitud Pendiente</span>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleApplyDestacado}
+                                    className="flex items-center gap-2 px-4 py-2 border-2 border-amber-500 text-amber-600 dark:text-amber-400 rounded-xl hover:bg-amber-500 hover:text-white dark:hover:text-white transition-all shadow-sm active:scale-95 text-sm font-bold bg-transparent"
+                                    title="Destaca tu perfil en la sección de mentores"
+                                >
+                                    <span className="material-icons text-[20px]">stars</span>
+                                    Ser Mentor Destacado
+                                </button>
+                            )}
                             <button
                                 onClick={() => setShowPreview(true)}
                                 className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm active:scale-95 text-sm font-medium"
@@ -419,6 +468,7 @@ const MentorDashboardPage = () => {
                                 </div>
                             </div>
 
+
                             {/* Help CTA Card */}
                             <div className="dash-card bg-slate-900 dark:bg-primary rounded-2xl p-6 text-white overflow-hidden relative hover:shadow-xl transition-all duration-500 group" style={{ animationDelay: '0.6s' }}>
                                 <div className="relative z-10">
@@ -447,6 +497,12 @@ const MentorDashboardPage = () => {
             <HelpCenterModal
                 isOpen={showHelp}
                 onClose={() => setShowHelp(false)}
+            />
+
+            <MentorDestacadoModal
+                isOpen={showDestacadoModal}
+                onClose={() => setShowDestacadoModal(false)}
+                onApplySuccess={() => { if (refreshUser) refreshUser(); }}
             />
         </div>
     );

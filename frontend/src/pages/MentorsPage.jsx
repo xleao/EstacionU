@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import FluidBackground from '../components/FluidBackground';
 import CoffeeChatModal from '../components/CoffeeChatModal';
-import { SECTOR_OPTIONS, AREA_OPTIONS } from './AccountPage';
+import { SECTOR_OPTIONS, AREA_OPTIONS } from '../components/CustomCombobox';
 
 export const MentorCard = ({ name, role, area, bio, tags, image, schedule, disponibilidades, linkedin_url, url_logo_empresa, empresa, onBookChat, index }) => {
     return (
@@ -24,7 +24,7 @@ export const MentorCard = ({ name, role, area, bio, tags, image, schedule, dispo
                     />
                 </div>
                 {/* Company logo badge (fallback to status dot if no logo) */}
-                {url_logo_empresa ? (
+                {url_logo_empresa && (
                     <div className="absolute bottom-0 right-0 w-11 h-11 rounded-full bg-white dark:bg-slate-800 border-[3px] border-white dark:border-slate-800 shadow-sm overflow-hidden transition-transform duration-300">
                         <img
                             src={url_logo_empresa}
@@ -32,8 +32,6 @@ export const MentorCard = ({ name, role, area, bio, tags, image, schedule, dispo
                             className="w-full h-full object-contain"
                         />
                     </div>
-                ) : (
-                    <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 border-[3px] border-white dark:border-slate-800 transition-transform duration-300" />
                 )}
             </div>
             <div className="text-center mb-3">

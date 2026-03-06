@@ -84,16 +84,16 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
                 const textMessage = [
                     `Hola ${mentorName}! 👋 ☕`,
                     '',
-                    `Soy *${userInfo}*${carreraInfo}, y acabo de solicitar una sesión de Coffee Chat contigo a través de EstaciónU. 🚀 ✨`,
+                    `Soy ${userInfo}, y acabo de solicitar una sesión de Coffee Chat contigo a través de EstaciónU. 🚀 ✨`,
                     '',
-                    `📅 *Detalles de la sesión:*`,
-                    `• *Horario:* ${formData.selectedSlotLabel}`,
-                    `• *Tema principal:* ${formData.tema}`,
+                    `📅 Detalles de la sesión:`,
+                    `* Horario: ${formData.selectedSlotLabel}`,
+                    `* Tema principal: ${formData.tema}`,
                     '',
-                    `🎯 *Un poco más sobre lo que busco:*`,
-                    `_"${formData.descripcion || 'Me gustaría conocer más sobre tu trayectoria profesional y conversar un rato.'}"_`,
+                    `🎯 Un poco más sobre lo que busco:`,
+                    `"${formData.descripcion || 'Me gustaría conocer más sobre tu trayectoria profesional.'}"`,
                     '',
-                    `Quedo a la espera de tu confirmación por la plataforma. ¡Muchas gracias por tu tiempo y disposición! 🙌`
+                    `Quedo a la espera de tu confirmación. ¡Muchas gracias por tu tiempo y disposición! 🙌`
                 ].join('\n');
 
                 const cleanPhone = mentor.celular.replace(/\D/g, '');
@@ -267,11 +267,15 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
                                             className="custom-select w-full pl-12 pr-10 py-3.5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all outline-none text-sm font-medium"
                                             id="tema" name="tema" value={formData.tema} onChange={handleChange} required>
                                             <option disabled value="">Selecciona un tema...</option>
-                                            <option value="cv">Revisión de CV / Portfolio</option>
-                                            <option value="career">Orientación de Carrera</option>
-                                            <option value="skills">Desarrollo de Habilidades Soft</option>
-                                            <option value="networking">Networking Estratégico</option>
-                                            <option value="industry">Insight del Sector Industrial</option>
+                                            <option value="Revisión de CV / Portfolio">Revisión de CV / Portfolio</option>
+                                            <option value="Orientación de Carrera">Orientación de Carrera</option>
+                                            <option value="Desarrollo de Habilidades Soft">Desarrollo de Habilidades Soft</option>
+                                            <option value="Networking Estratégico">Networking Estratégico</option>
+                                            <option value="Insight del Sector Industrial">Insight del Sector Industrial</option>
+                                            <option value="Tu trabajo y/o línea de carrera">Tu trabajo y/o linea de carrera</option>
+                                            <option value="Experiencia en un sector o industria">Experiencia en un sector o industria</option>
+                                            <option value="Orientación universitaria y/o posgrado">Orientacion universitaria y/o posgrado</option>
+                                            <option value="Otro">Otro</option>
                                         </select>
                                     </div>
                                 </div>

@@ -181,7 +181,7 @@ async def google_login(credential: schemas.GoogleLoginRequest, background_tasks:
                 correo=user_email,
                 hash_password=security.get_password_hash(security.SECRET_KEY[:10]), # Dummy password
                 nombre_completo=name,
-                tipo_usuario='estudiante' # Default role
+                tipo_usuario='usuario' # Default role for new Google logins (force selection)
             )
             db.add(user)
             db.commit()

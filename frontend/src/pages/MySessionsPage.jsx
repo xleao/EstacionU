@@ -454,7 +454,19 @@ const MySessionsPage = () => {
 
                                                 {/* WhatsApp / Blocked */}
                                                 {isConfirmed(session.status) ? (
-                                                    <button className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-sm active:scale-95 hover:shadow-lg hover:shadow-[#25D366]/20">
+                                                    <button
+                                                        onClick={() => {
+                                                            const phone = session.otherProfile?.phone;
+                                                            if (phone) {
+                                                                const cleanPhone = phone.replace(/\D/g, '');
+                                                                const finalPhone = cleanPhone.length === 9 && cleanPhone.startsWith('9') ? `51${cleanPhone}` : cleanPhone;
+                                                                window.open(`https://api.whatsapp.com/send?phone=${finalPhone}`, '_blank');
+                                                            } else {
+                                                                alert('El número de WhatsApp no está disponible.');
+                                                            }
+                                                        }}
+                                                        className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-sm active:scale-95 hover:shadow-lg hover:shadow-[#25D366]/20"
+                                                    >
                                                         <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.512-2.96-2.626-.087-.114-.694-.925-.694-1.763 0-.838.441-1.249.598-1.417.157-.168.343-.21.458-.21.114 0 .229.001.328.005.105.004.246-.04.385.293.144.344.487 1.189.529 1.274.043.085.071.184.014.3-.056.115-.085.184-.171.285-.085.101-.186.226-.265.304-.101.099-.205.206-.086.411.119.205.529.873 1.139 1.415.787.699 1.448.916 1.653 1.02.205.103.324.085.441-.051.115-.136.486-.567.615-.761.129-.193.258-.163.441-.095.186.069 1.172.553 1.372.652.2.099.333.146.382.23.049.084.049.49-.095.895z"></path></svg>
                                                         Chat WhatsApp
                                                     </button>

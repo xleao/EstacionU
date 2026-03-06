@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app import models
 from app.api.deps import get_current_user, get_current_admin, get_db
 from datetime import datetime, timedelta
 from app.core import security
+from app.services import email_service
 import calendar
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -616,3 +617,177 @@ def delete_user_full_cascade(
     db.commit()
     
     return {"message": "Usuario y toda su información relacionada eliminados correctamente"}
+
+
+# ---- Solicitudes Mentor Destacado ----
+
+@router.get("/solicitudes")
+def list_solicitudes(
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    """Returns all featured mentor applications with full profile data."""
+    solicitudes = (
+        db.query(models.DestacadoSolicitud)
+        .order_by(models.DestacadoSolicitud.fecha_solicitud.desc())
+        .all()
+    )
+
+    results = []
+    for s in solicitudes:
+        mp = s.mentor_perfil
+        if not mp:
+            continue
+        user = mp.usuario
+        profile = user.perfil if user else None
+        education = user.educacion[0] if user and user.educacion else None
+
+        results.append({
+            "id": s.id,
+            "status": s.status,
+            "fecha_solicitud": s.fecha_solicitud,
+            "fecha_revision": s.fecha_revision,
+            "notas_admin": s.notas_admin,
+            "mentor": {
+                "id": user.id if user else None,
+                "nombre_completo": user.nombre_completo if user else "",
+                "correo": user.correo if user else "",
+                "url_foto": profile.url_foto if profile else None,
+                "url_linkedin": profile.url_linkedin if profile else None,
+                "telefono": profile.telefono_movil if profile else None,
+                "genero": profile.genero if profile else None,
+                "fecha_nacimiento": profile.fecha_nacimiento.isoformat() if profile and profile.fecha_nacimiento else None,
+                "universidad": education.universidad if education else None,
+                "carrera": education.carrera if education else None,
+                "anio_inicio": education.anio_inicio if education else None,
+                "anio_fin": education.anio_fin if education else None,
+                # Mentor-specific fields
+                "sector": mp.sectores[0].nombre if mp.sectores else None,
+                "area": mp.areas[0].nombre if mp.areas else None,
+                "biografia": mp.biografia,
+                "empresa": mp.empresa,
+                "url_logo_empresa": mp.url_logo_empresa,
+                "destacado": mp.destacado,
+                "bloqueado_destacado": mp.bloqueado_destacado,
+                "disponibilidades": [
+                    {"dia": d.dia, "hora_inicio": d.hora_inicio, "hora_fin": d.hora_fin}
+                    for d in mp.disponibilidades
+                ],
+            }
+        })
+
+    return results
+
+
+@router.post("/solicitudes/{solicitud_id}/aprobar")
+async def aprobar_solicitud(
+    solicitud_id: int,
+    background_tasks: BackgroundTasks,
+    body: dict = {},
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    from datetime import datetime
+    solicitud = db.query(models.DestacadoSolicitud).filter(
+        models.DestacadoSolicitud.id == solicitud_id
+    ).first()
+    if not solicitud:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    
+    solicitud.status = "aprobado"
+    solicitud.fecha_revision = datetime.now()
+    solicitud.notas_admin = body.get("notas_admin", None)
+
+    mentor_profile = solicitud.mentor_perfil
+    if mentor_profile:
+        mentor_profile.destacado = True
+        
+        # Send approval email
+        user = mentor_profile.usuario
+        if user:
+            background_tasks.add_task(
+                email_service.send_destacado_approved_email, 
+                user.correo, 
+                user.nombre_completo
+            )
+
+    db.commit()
+    return {"message": "Solicitud aprobada. El mentor ahora es Destacado.", "status": "aprobado"}
+
+
+@router.post("/solicitudes/{solicitud_id}/rechazar")
+def rechazar_solicitud(
+    solicitud_id: int,
+    background_tasks: BackgroundTasks,
+    body: dict = {},
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    from datetime import datetime
+    solicitud = db.query(models.DestacadoSolicitud).filter(
+        models.DestacadoSolicitud.id == solicitud_id
+    ).first()
+    if not solicitud:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+
+    solicitud.status = "rechazado"
+    solicitud.fecha_revision = datetime.now()
+    solicitud.notas_admin = body.get("notas_admin", None)
+
+    mentor_profile = solicitud.mentor_perfil
+    if mentor_profile:
+        user = mentor_profile.usuario
+        if user:
+            background_tasks.add_task(
+                email_service.send_destacado_rejected_email, 
+                user.correo, 
+                user.nombre_completo,
+                solicitud.notas_admin
+            )
+
+    db.commit()
+    return {"message": "Solicitud rechazada.", "status": "rechazado"}
+
+
+@router.post("/solicitudes/{solicitud_id}/bloquear")
+async def bloquear_mentor_destacado(
+    solicitud_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    solicitud = db.query(models.DestacadoSolicitud).filter(
+        models.DestacadoSolicitud.id == solicitud_id
+    ).first()
+    if not solicitud:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    
+    mentor_profile = solicitud.mentor_perfil
+    if mentor_profile:
+        mentor_profile.bloqueado_destacado = True
+        # If they were featured, we might want to un-feature them too?
+        # The prompt says "no pueda mandar mas solicitudes", so we just block future ones.
+        # But usually a block also removes existing status if it was active.
+        # User said: "bloquear, que sera para que el mentor ya no pueda mandar mas solicitudes"
+    
+    db.commit()
+    return {"message": "Mentor bloqueado para futuras solicitudes.", "bloqueado": True}
+
+
+@router.post("/solicitudes/{solicitud_id}/desbloquear")
+async def desbloquear_mentor_destacado(
+    solicitud_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    solicitud = db.query(models.DestacadoSolicitud).filter(
+        models.DestacadoSolicitud.id == solicitud_id
+    ).first()
+    if not solicitud:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    
+    mentor_profile = solicitud.mentor_perfil
+    if mentor_profile:
+        mentor_profile.bloqueado_destacado = False
+    
+    db.commit()
+    return {"message": "Mentor desbloqueado. Ya puede volver a postular.", "bloqueado": False}
