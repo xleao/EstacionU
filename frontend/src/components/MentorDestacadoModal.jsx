@@ -133,8 +133,12 @@ const StepForm = ({ onClose, onSuccess }) => {
     const handleLogoChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const valid = ['image/jpeg', 'image/png'];
-        if (!valid.includes(file.type)) {
+
+        // Validate by both MIME type and extension (Windows may send wrong content-type)
+        const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        const validExts = ['.jpg', '.jpeg', '.png'];
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (!validTypes.includes(file.type) && !validExts.includes(ext)) {
             showError('Solo se permiten imágenes en formato PNG o JPEG.');
             return;
         }

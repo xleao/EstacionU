@@ -257,15 +257,24 @@ async def upload_company_logo(
     if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/svg+xml"]:
         raise HTTPException(status_code=400, detail="Solo se permiten imagenes JPG, PNG, WEBP y SVG")
     
-    # Create filename
+    # Read file content and check size (50MB max)
+    contents = await file.read()
+    MAX_SIZE = 50 * 1024 * 1024  # 50 MB
+    if len(contents) > MAX_SIZE:
+        raise HTTPException(status_code=400, detail="El logo no debe superar los 50 MB.")
+    
+    # Create filename (infer extension from content_type if missing)
     file_ext = os.path.splitext(file.filename)[1]
+    if not file_ext:
+        ext_map = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/svg+xml": ".svg"}
+        file_ext = ext_map.get(file.content_type, ".jpg")
     filename = f"company_{uuid.uuid4()}{file_ext}"
     file_path = f"static/uploads/{filename}"
     
     # Save file
     try:
         with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            buffer.write(contents)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al guardar el logo: {str(e)}")
     
