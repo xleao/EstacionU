@@ -9,7 +9,8 @@ const CAREER_OPTIONS = [
     'Ingeniería Industrial',
     'Ingeniería de Inteligencia Artificial',
     'Ingeniería de Software',
-    'Ingeniería de Sistemas'
+    'Ingeniería de Sistemas',
+    'Otros'
 ];
 
 const CompleteProfilePage = () => {
