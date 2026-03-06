@@ -218,6 +218,17 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json();
         localStorage.setItem('token', data.access_token);
 
+        // CAPA 1: Backend returned is_new=true → always go to role selection
+        if (data.is_new === true) {
+            // Fetch user to set context but then redirect
+            const userRes = await fetch('/api/users/me', {
+                headers: { Authorization: `Bearer ${data.access_token}` }
+            });
+            if (userRes.ok) setUser(await userRes.json());
+            navigate('/select-role');
+            return { is_new: true };
+        }
+
         const userRes = await fetch('/api/users/me', {
             headers: { Authorization: `Bearer ${data.access_token}` }
         });
@@ -226,22 +237,23 @@ export const AuthProvider = ({ children }) => {
             const userData = await userRes.json();
             setUser(userData);
 
-            const userRole = (userData.role || userData.tipo_usuario || '').toLowerCase();
-            const hasNoRole = !userRole || userRole === 'user' || userRole === 'usuario' || userRole === '';
+            // CAPA 2: Check role — 'usuario' means no role selected yet
+            const UNASSIGNED = ['', 'user', 'usuario'];
+            const userRole = (userData.role || userData.tipo_usuario || '').toLowerCase().trim();
+            const hasNoRole = !userRole || UNASSIGNED.includes(userRole);
 
-            // ALWAYS check role first — if no role assigned, go to role selection
             if (hasNoRole) {
                 navigate('/select-role');
                 return { is_new: true };
             }
 
-            // Has a role but hasn't completed onboarding profile
-            if (userData.onboarding_completo === false || !userData.onboarding_completo) {
+            // CAPA 3: Has role but onboarding not complete → fill profile
+            if (!userData.onboarding_completo) {
                 navigate('/complete-profile');
                 return { is_new: true };
             }
 
-            // Existing user with completed onboarding — go to their dashboard
+            // All good — route to correct dashboard
             if (['admin', 'administrador'].includes(userRole)) {
                 navigate('/admin/dashboard');
             } else if (['mentor', 'graduate', 'egresado'].includes(userRole)) {
