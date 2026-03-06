@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WaveBackground from '../components/WaveBackground';
 import { useAuth } from '../context/AuthContext';
+import { CustomCombobox } from '../components/CustomCombobox';
+
+const UNIVERSITY_OPTIONS = ['UNI', 'Otros'];
+const CAREER_OPTIONS = [
+    'Ingeniería Industrial',
+    'Ingeniería de Inteligencia Artificial',
+    'Ingeniería de Software',
+    'Ingeniería de Sistemas'
+];
 
 const CompleteProfilePage = () => {
     const navigate = useNavigate();
@@ -328,10 +337,9 @@ const CompleteProfilePage = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Institución</label>
-                                            <input
+                                            <CustomCombobox
                                                 name="universidad"
-                                                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all placeholder:text-slate-400"
-                                                type="text"
+                                                options={UNIVERSITY_OPTIONS}
                                                 placeholder="Ej. UNI, UPC..."
                                                 value={newHistory.universidad}
                                                 onChange={handleNewHistoryChange}
@@ -339,10 +347,9 @@ const CompleteProfilePage = () => {
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Carrera</label>
-                                            <input
+                                            <CustomCombobox
                                                 name="carrera"
-                                                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all placeholder:text-slate-400"
-                                                type="text"
+                                                options={CAREER_OPTIONS}
                                                 placeholder="Ej. Ingeniería"
                                                 value={newHistory.carrera}
                                                 onChange={handleNewHistoryChange}
