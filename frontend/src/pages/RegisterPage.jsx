@@ -93,10 +93,6 @@ const RegisterPage = () => {
         formData.celular.trim() &&
         formData.fechaNacimiento &&
         formData.genero &&
-        formData.universidad.trim() &&
-        formData.carrera.trim() &&
-        formData.anioInicio &&
-        formData.anioFin &&
         formData.terms;
 
     const validateProfile = () => {
@@ -107,10 +103,6 @@ const RegisterPage = () => {
         if (!formData.celular.trim()) return 'El celular es obligatorio.';
         if (!formData.fechaNacimiento) return 'La fecha de nacimiento es obligatoria.';
         if (!formData.genero) return 'El género es obligatorio.';
-        if (!formData.universidad.trim()) return 'La institución es obligatoria.';
-        if (!formData.carrera.trim()) return 'La carrera es obligatoria.';
-        if (!formData.anioInicio) return 'El año de inicio es obligatorio.';
-        if (!formData.anioFin) return 'El año de fin es obligatorio.';
         if (!formData.terms) return 'Debes aceptar los términos y condiciones.';
         return null;
     };
@@ -144,6 +136,10 @@ const RegisterPage = () => {
 
             // 1. Register account
             // This will create account, set role, update profile in AuthContext
+
+            // Primary academic data from Historial Académico section
+            const primaryEdu = educationList[0] || newHistory;
+
             await register(
                 nombre,
                 apellidos,
@@ -155,13 +151,11 @@ const RegisterPage = () => {
                     telefono_movil: formData.celular,
                     fecha_nacimiento: formData.fechaNacimiento || null,
                     genero: formData.genero,
-                    universidad: formData.universidad,
-                    carrera: formData.carrera,
-                    anio_inicio: formData.anioInicio ? parseInt(formData.anioInicio) : null,
-                    anio_fin: formData.anioFin ? (formData.anioFin === 'cursando' ? -1 : parseInt(formData.anioFin)) : null,
+                    universidad: primaryEdu.universidad,
+                    carrera: primaryEdu.carrera,
+                    anio_inicio: primaryEdu.anioInicio ? parseInt(primaryEdu.anioInicio) : null,
+                    anio_fin: primaryEdu.anioFin ? (primaryEdu.anioFin === 'cursando' ? -1 : parseInt(primaryEdu.anioFin)) : null,
                     url_linkedin: formData.linkedin,
-                    // If they added extra academic history, we don't have an endpoint for it in "me/profile" directly yet,
-                    // but we ensure the main one is stored right.
                 }
             );
             // register() handles navigation
@@ -413,61 +407,7 @@ const RegisterPage = () => {
                                         </select>
                                     </div>
 
-                                    {/* Institución */}
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Institución / Centro de Estudios *</label>
-                                        <input
-                                            name="universidad"
-                                            className={`w-full rounded-2xl border ${fieldBorder(formData.universidad.trim())} bg-white dark:bg-slate-800/80 px-5 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all placeholder:text-slate-400`}
-                                            type="text"
-                                            placeholder="Ej. UNI, UPC, Cibertec..."
-                                            value={formData.universidad}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
 
-                                    {/* Carrera */}
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Carrera / Programa *</label>
-                                        <input
-                                            name="carrera"
-                                            className={`w-full rounded-2xl border ${fieldBorder(formData.carrera.trim())} bg-white dark:bg-slate-800/80 px-5 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all placeholder:text-slate-400`}
-                                            type="text"
-                                            placeholder="Ej. Ingeniería de Sistemas"
-                                            value={formData.carrera}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-
-                                    {/* Periodo Académico */}
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Periodo Académico *</label>
-                                        <div className="flex gap-4">
-                                            <select
-                                                name="anioInicio"
-                                                className={`w-full rounded-2xl border ${fieldBorder(formData.anioInicio)} bg-white dark:bg-slate-800/80 px-5 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all`}
-                                                value={formData.anioInicio}
-                                                onChange={handleChange}
-                                            >
-                                                <option value="">Año inicio</option>
-                                                {Array.from({ length: 40 }, (_, i) => currentYear - i).map(year => (
-                                                    <option key={year} value={year}>{year}</option>
-                                                ))}
-                                            </select>
-                                            <select
-                                                name="anioFin"
-                                                className={`w-full rounded-2xl border ${fieldBorder(formData.anioFin)} bg-white dark:bg-slate-800/80 px-5 py-3 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all`}
-                                                value={formData.anioFin}
-                                                onChange={handleChange}
-                                            >
-                                                <option value="">Año fin</option>
-                                                <option value="cursando">Cursando (Actualidad)</option>
-                                                {Array.from({ length: 45 }, (_, i) => currentYear + 5 - i).map(year => (
-                                                    <option key={year} value={year}>{year}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
 
                                     {/* LinkedIn */}
                                     <div className="space-y-2 md:col-span-2">
