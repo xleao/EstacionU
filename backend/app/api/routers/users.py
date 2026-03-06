@@ -393,7 +393,7 @@ async def apply_for_destacado(
     # Send email to Admin
     background_tasks.add_task(
         email_service.send_destacado_notification_email, 
-        "leaoll1729@gmail.com", 
+        "proyectofiisperu@gmail.com", 
         current_user.nombre_completo, 
         current_user.correo
     )
