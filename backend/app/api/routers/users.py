@@ -259,9 +259,9 @@ async def upload_company_logo(
     
     # Read file content and check size (50MB max)
     contents = await file.read()
-    MAX_SIZE = 50 * 1024 * 1024  # 50 MB
+    MAX_SIZE = 100 * 1024 * 1024  # 100 MB
     if len(contents) > MAX_SIZE:
-        raise HTTPException(status_code=400, detail="El logo no debe superar los 50 MB.")
+        raise HTTPException(status_code=400, detail="El logo no debe superar los 100 MB.")
     
     # Create filename (infer extension from content_type if missing)
     file_ext = os.path.splitext(file.filename)[1]

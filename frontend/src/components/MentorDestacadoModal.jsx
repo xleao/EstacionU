@@ -142,8 +142,8 @@ const StepForm = ({ onClose, onSuccess }) => {
             showError('Solo se permiten imágenes en formato PNG o JPEG.');
             return;
         }
-        if (file.size > 50 * 1024 * 1024) {
-            showError('El logo no debe superar los 50MB.');
+        if (file.size > 100 * 1024 * 1024) {
+            showError('El logo no debe superar los 100MB.');
             return;
         }
         const token = localStorage.getItem('token');
@@ -294,7 +294,7 @@ const StepForm = ({ onClose, onSuccess }) => {
                                     <p className="text-[10px] text-slate-400 font-medium ml-1">Empresa donde trabajas actualmente.</p>
                                     <p className="text-[10px] font-bold text-amber-500 ml-1 flex items-center gap-1 mt-0.5">
                                         <span className="material-icons text-[12px]">info</span>
-                                        Logo obligatorio · PNG o JPEG · Máx. 50 MB
+                                        Logo obligatorio · PNG o JPEG · Máx. 100 MB
                                     </p>
                                 </div>
                             </div>
