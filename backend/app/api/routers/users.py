@@ -390,13 +390,22 @@ async def apply_for_destacado(
     db.add(solicitud)
     db.commit()
     
-    # Send email to Admin
-    background_tasks.add_task(
-        email_service.send_destacado_notification_email, 
-        "proyectofiisperu@gmail.com", 
-        current_user.nombre_completo, 
-        current_user.correo
-    )
+    # Send email to Admins
+    admin_emails = [
+        "proyectofiisperu@gmail.com",
+        "lmejia@uni.pe",
+        "mlescanoa@uni.pe",
+        "miguel199826@gmail.com",
+        "aldahir.rojas.m@uni.pe",
+        "aldahir080698@gmail.com"
+    ]
+    for email in admin_emails:
+        background_tasks.add_task(
+            email_service.send_destacado_notification_email, 
+            email, 
+            current_user.nombre_completo, 
+            current_user.correo
+        )
     
     # Send email to Mentor
     background_tasks.add_task(
