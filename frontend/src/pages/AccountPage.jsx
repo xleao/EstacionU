@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import LakeBackground from '../components/LakeBackground';
-import { useAuth } from '../context/AuthContext';
-import { SECTOR_OPTIONS, AREA_OPTIONS, CustomCombobox } from '../components/CustomCombobox';
+import { CustomCombobox } from '../components/CustomCombobox';
+import { useCatalogs } from '../hooks/useCatalogs';
 
 const UNIVERSITY_OPTIONS = ['UNI', 'Otros'];
 const CAREER_OPTIONS = [
@@ -16,6 +16,7 @@ const CAREER_OPTIONS = [
 
 const AccountPage = () => {
     const { user, refreshUser } = useAuth();
+    const { AREA_OPTIONS, SECTOR_OPTIONS } = useCatalogs();
 
     // Status message state
     const [statusMessage, setStatusMessage] = useState(null);

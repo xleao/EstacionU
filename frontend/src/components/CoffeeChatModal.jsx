@@ -10,6 +10,8 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
         descripcion: '',
         selectedSlotLabel: ''
     });
+    const [selectedDisp, setSelectedDisp] = useState(null);
+    const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
 
     const [status, setStatus] = useState(null); // 'loading', 'success', 'error'
     const navigate = useNavigate();
@@ -25,6 +27,8 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
                 descripcion: '',
                 selectedSlotLabel: ''
             });
+            setSelectedDisp(null);
+            setDateDropdownOpen(false);
             setStatus(null);
         }
     }, [isOpen, mentor?.id]);
@@ -111,34 +115,63 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
         }
     };
 
-    const getNextDateForDay = (dayName) => {
+    const getFutureDatesForDay = (dayName, count = 52) => {
         const days = {
             'lunes': 1, 'martes': 2, 'miercoles': 3, 'miércoles': 3,
             'jueves': 4, 'viernes': 5, 'sabado': 6, 'sábado': 6, 'domingo': 0
         };
         const targetDay = days[dayName.toLowerCase()];
-        if (targetDay === undefined) return new Date().toLocaleDateString('en-CA');
+        if (targetDay === undefined) return [];
 
         const now = new Date();
-        const resultDate = new Date();
-        resultDate.setDate(now.getDate() + (targetDay + 7 - now.getDay()) % 7);
+        const firstDate = new Date(now);
+        let daysToAdd = (targetDay + 7 - now.getDay()) % 7;
+        if (daysToAdd === 0) daysToAdd = 0; // include today
+        firstDate.setDate(now.getDate() + daysToAdd);
 
-        // If it's today and targeting today, but we want it to be at least today or next week
-        // Usually, if a mentor says "Monday" and it's Sunday, we pick tomorrow.
-        // If it's Monday morning and we pick Monday, we could pick today or next week.
-        // Let's stick to the closest future (including today).
-
-        return resultDate.toLocaleDateString('en-CA');
+        const dates = [];
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        for (let i = 0; i < count; i++) {
+            const d = new Date(firstDate);
+            d.setDate(firstDate.getDate() + (i * 7));
+            dates.push({
+                value: d.toLocaleDateString('en-CA'),
+                label: `${diasSemana[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`,
+                short: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+            });
+        }
+        return dates;
     };
 
     const handleSelectSlot = (disp) => {
-        const calculatedDate = getNextDateForDay(disp.dia);
+        setSelectedDisp(disp);
+        setDateDropdownOpen(true);
+        // Auto-select the first available date
+        const futureDates = getFutureDatesForDay(disp.dia);
+        const firstDate = futureDates.length > 0 ? futureDates[0] : null;
         setFormData({
             ...formData,
             hora: disp.hora_inicio,
-            fecha: calculatedDate,
-            selectedSlotLabel: `${disp.dia} ${calculatedDate.split('-').reverse().join('/')} a las ${disp.hora_inicio}`
+            fecha: firstDate ? firstDate.value : '',
+            selectedSlotLabel: firstDate
+                ? `${disp.dia} ${firstDate.short} a las ${disp.hora_inicio}`
+                : `${disp.dia} a las ${disp.hora_inicio}`
         });
+    };
+
+    const handleDateChange = (dateValue) => {
+        if (!selectedDisp) return;
+        const futureDates = getFutureDatesForDay(selectedDisp.dia);
+        const found = futureDates.find(d => d.value === dateValue);
+        setFormData({
+            ...formData,
+            fecha: dateValue,
+            selectedSlotLabel: found
+                ? `${selectedDisp.dia} ${found.short} a las ${selectedDisp.hora_inicio}`
+                : formData.selectedSlotLabel
+        });
+        setDateDropdownOpen(false);
     };
 
     return (
@@ -243,18 +276,45 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
                                     </div>
                                 </div>
 
-                                {formData.selectedSlotLabel && (
-                                    <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border-2 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                                                <span className="material-icons">event_available</span>
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cita Programada para:</p>
-                                                <p className="text-sm font-bold text-slate-700 dark:text-white">
-                                                    {formData.selectedSlotLabel}
-                                                </p>
-                                            </div>
+                                {selectedDisp && (
+                                    <div className="space-y-3">
+                                        <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] ml-1">Selecciona la Fecha</label>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
+                                                className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-left text-sm font-medium flex items-center gap-3 hover:border-primary/30 transition-all"
+                                            >
+                                                <span className="material-icons text-slate-400 text-[20px]">calendar_month</span>
+                                                <span className="flex-1 text-slate-900 dark:text-white font-bold truncate">
+                                                    {formData.fecha
+                                                        ? getFutureDatesForDay(selectedDisp.dia).find(d => d.value === formData.fecha)?.label || 'Fecha seleccionada'
+                                                        : 'Selecciona una fecha...'}
+                                                </span>
+                                                <span className={`material-icons text-slate-400 text-[20px] transition-transform ${dateDropdownOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                                            </button>
+                                            {dateDropdownOpen && (
+                                                <div className="absolute z-30 left-0 right-0 mt-1 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-black/30 overflow-hidden">
+                                                    <div className="max-h-[180px] overflow-y-auto custom-scrollbar">
+                                                        {getFutureDatesForDay(selectedDisp.dia).map((d, i) => (
+                                                            <button
+                                                                key={i}
+                                                                type="button"
+                                                                onClick={() => handleDateChange(d.value)}
+                                                                className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-all flex items-center gap-3 ${formData.fecha === d.value
+                                                                        ? 'bg-primary/10 text-primary font-bold'
+                                                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                                                    }`}
+                                                            >
+                                                                <span className={`material-icons text-[16px] ${formData.fecha === d.value ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}>
+                                                                    {formData.fecha === d.value ? 'radio_button_checked' : 'radio_button_unchecked'}
+                                                                </span>
+                                                                {d.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -305,11 +365,11 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
                                     </button>
                                     {status === 'error' && <p className="mt-3 text-red-500 text-xs text-center font-bold flex items-center justify-center gap-1"><span className="material-icons text-sm">error</span> Error al enviar. Intenta de nuevo.</p>}
                                 </div>
-                            </form>
+                            </form >
                         </>
                     )}
-                </div>
-            </div>
+                </div >
+            </div >
 
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
@@ -335,7 +395,7 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
                 }
                 .py-4\.5 { padding-top: 1.125rem; padding-bottom: 1.125rem; }
             `}</style>
-        </div>
+        </div >
     );
 };
 

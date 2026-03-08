@@ -15,6 +15,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminSolicitudesPage from './pages/AdminSolicitudesPage';
+import AdminCoffeeChatsPage from './pages/AdminCoffeeChatsPage';
+import AdminCategoriasPage from './pages/AdminCategoriasPage';
 import RoleSelectionPage from './pages/RoleSelectionPage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
 import './index.css';
@@ -105,6 +107,22 @@ function AppContent() {
                             element={
                                 <ProtectedRoute>
                                     <AdminSolicitudesPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/chats"
+                            element={
+                                <ProtectedRoute>
+                                    <AdminCoffeeChatsPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/categorias"
+                            element={
+                                <ProtectedRoute>
+                                    <AdminCategoriasPage />
                                 </ProtectedRoute>
                             }
                         />

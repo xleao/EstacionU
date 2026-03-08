@@ -7,7 +7,7 @@ from app import models
 from app.schemas import schemas
 from app.core import security
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
@@ -38,8 +38,10 @@ async def get_current_admin(current_user: models.User = Depends(get_current_user
     profile_role = (current_user.perfil.rol.lower() if current_user.perfil and current_user.perfil.rol else "")
 
     if role not in ["admin", "administrador"] and profile_role not in ["admin", "administrador"]:
+        print(f"DEBUG: Access Denied for {current_user.correo}. Role: {role}, ProfileRole: {profile_role}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permisos para acceder a este recurso de administrador",
         )
+    print(f"DEBUG: Access Granted for {current_user.correo}")
     return current_user

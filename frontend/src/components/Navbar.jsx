@@ -91,10 +91,22 @@ const Navbar = () => {
                                         Solicitudes
                                     </Link>
                                     <Link
+                                        className={`${isActive('/admin/chats') ? 'text-primary' : 'text-slate-600 dark:text-slate-300'} font-semibold hover:text-primary transition-colors`}
+                                        to="/admin/chats"
+                                    >
+                                        Coffee Chats
+                                    </Link>
+                                    <Link
                                         className={`${isActive('/admin/usuarios') ? 'text-primary' : 'text-slate-600 dark:text-slate-300'} font-semibold hover:text-primary transition-colors`}
                                         to="/admin/usuarios"
                                     >
                                         Usuarios
+                                    </Link>
+                                    <Link
+                                        className={`${isActive('/admin/categorias') ? 'text-primary' : 'text-slate-600 dark:text-slate-300'} font-semibold hover:text-primary transition-colors`}
+                                        to="/admin/categorias"
+                                    >
+                                        Categorías
                                     </Link>
                                 </>
                             ) : isMentor ? (
@@ -260,7 +272,9 @@ const Navbar = () => {
                                 <>
                                     <Link className={`${isActive('/admin/dashboard') ? 'text-primary' : 'text-slate-600 dark:text-slate-300'} font-bold py-3 border-b border-slate-100 dark:border-slate-800 transition-colors`} to="/admin/dashboard" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
                                     <Link className={`${isActive('/admin/solicitudes') ? 'text-primary' : 'text-slate-600 dark:text-slate-300'} font-bold py-3 border-b border-slate-100 dark:border-slate-800 transition-colors`} to="/admin/solicitudes" onClick={() => setIsMobileMenuOpen(false)}>Solicitudes</Link>
+                                    <Link className={`${isActive('/admin/chats') ? 'text-primary' : 'text-slate-600 dark:text-slate-300'} font-bold py-3 border-b border-slate-100 dark:border-slate-800 transition-colors`} to="/admin/chats" onClick={() => setIsMobileMenuOpen(false)}>Coffee Chats</Link>
                                     <Link className={`${isActive('/admin/usuarios') ? 'text-primary' : 'text-slate-600 dark:text-slate-300'} font-bold py-3 border-b border-slate-100 dark:border-slate-800 transition-colors`} to="/admin/usuarios" onClick={() => setIsMobileMenuOpen(false)}>Usuarios</Link>
+                                    <Link className={`${isActive('/admin/categorias') ? 'text-primary' : 'text-slate-600 dark:text-slate-300'} font-bold py-3 border-b border-slate-100 dark:border-slate-800 transition-colors`} to="/admin/categorias" onClick={() => setIsMobileMenuOpen(false)}>Categorías</Link>
                                 </>
                             ) : isMentor ? (
                                 <>

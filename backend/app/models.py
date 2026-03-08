@@ -155,6 +155,11 @@ class Appointment(Base):
     estado = Column(String, nullable=False) # 'pendiente', 'confirmada', 'realizada', 'cancelada'
     fecha_realizada = Column(Date, nullable=True)
     hora_realizada = Column(Time, nullable=True)
+    se_dio_en_dia_acordado = Column(Boolean, nullable=True)
+    calificacion_general = Column(Integer, nullable=True)  # 1-5
+    calificacion_utilidad = Column(Integer, nullable=True)  # 1-5
+    recomendaria_mentor = Column(Boolean, nullable=True)
+    recordatorio_enviado = Column(Boolean, default=False)
     fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
 
     mentee = relationship("User", foreign_keys=[usuario_mentee_id], back_populates="citas_mentee")

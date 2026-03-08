@@ -16,6 +16,15 @@ const MySessionsPage = () => {
     const [editForm, setEditForm] = useState({ fecha: '', hora: '', tema: '', mensaje: '' });
     const [deletingId, setDeletingId] = useState(null);
     const [completingId, setCompletingId] = useState(null);
+    const [completingAsMentor, setCompletingAsMentor] = useState(false);
+    const [feedbackForm, setFeedbackForm] = useState({
+        seDioEnDiaAcordado: null,
+        fechaRealizada: '',
+        horaRealizada: '',
+        calificacionGeneral: 0,
+        calificacionUtilidad: 0,
+        recomendaria: null
+    });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 4;
     const [highlightId, setHighlightId] = useState(null);
@@ -96,7 +105,7 @@ const MySessionsPage = () => {
 
     // Lock body scroll when details modal is open
     useEffect(() => {
-        if (editingSession) {
+        if (editingSession || completingId) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -104,7 +113,7 @@ const MySessionsPage = () => {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [editingSession]);
+    }, [editingSession, completingId]);
 
     const getToken = () => localStorage.getItem('token');
 
@@ -115,9 +124,24 @@ const MySessionsPage = () => {
             return;
         }
 
-        // If trying to mark as completed, show confirmation modal first
+        // If trying to mark as completed, show feedback form first (only if student)
         if (newStatus === 'realizada') {
+            const session = sessions.find(s => s.id === id);
+            const isSessionAsMentor = session ? session.asMentor : false;
+
             setCompletingId(id);
+            setCompletingAsMentor(isSessionAsMentor);
+
+            if (!isSessionAsMentor) {
+                setFeedbackForm({
+                    seDioEnDiaAcordado: null,
+                    fechaRealizada: '',
+                    horaRealizada: '',
+                    calificacionGeneral: 0,
+                    calificacionUtilidad: 0,
+                    recomendaria: null
+                });
+            }
             return;
         }
 
@@ -135,15 +159,34 @@ const MySessionsPage = () => {
         } catch (err) { console.error(err); }
     };
 
+    const isFeedbackValid = feedbackForm.seDioEnDiaAcordado !== null
+        && feedbackForm.calificacionGeneral > 0
+        && feedbackForm.calificacionUtilidad > 0
+        && feedbackForm.recomendaria !== null
+        && (feedbackForm.seDioEnDiaAcordado === true || (feedbackForm.fechaRealizada && feedbackForm.horaRealizada));
+
     const confirmComplete = async () => {
         if (!completingId) return;
+        if (!completingAsMentor && !isFeedbackValid) return;
+
         const token = getToken();
         if (!token) return;
+
         try {
+            const bodyData = completingAsMentor ? { estado: 'realizada' } : {
+                estado: 'realizada',
+                se_dio_en_dia_acordado: feedbackForm.seDioEnDiaAcordado,
+                fecha_realizada: feedbackForm.seDioEnDiaAcordado ? null : feedbackForm.fechaRealizada,
+                hora_realizada: feedbackForm.seDioEnDiaAcordado ? null : feedbackForm.horaRealizada,
+                calificacion_general: feedbackForm.calificacionGeneral,
+                calificacion_utilidad: feedbackForm.calificacionUtilidad,
+                recomendaria_mentor: feedbackForm.recomendaria
+            };
+
             const res = await fetch(`/api/appointments/${completingId}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ estado: 'realizada' })
+                body: JSON.stringify(bodyData)
             });
             if (res.ok) {
                 setSessions(prev => prev.map(s => s.id === completingId ? { ...s, status: 'realizada' } : s));
@@ -293,7 +336,11 @@ const MySessionsPage = () => {
                         @keyframes sessFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
                         @keyframes sessSlideIn { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
                         @keyframes sessScaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+                        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                        @keyframes modalScaleUp { from { opacity: 0; transform: scale(0.92) translateY(12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
                         .sess-card { animation: sessFadeUp 0.5s ease-out both; }
+                        .modal-backdrop-anim { animation: modalFadeIn 0.25s ease-out both; }
+                        .modal-card-anim { animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
                         @keyframes sessHighlight {
                             0% { border-color: #4ade80; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
                             25% { border-color: #22c55e; box-shadow: 0 0 20px 4px rgba(34, 197, 94, 0.25); }
@@ -783,24 +830,219 @@ const MySessionsPage = () => {
 
 
 
-                {/* Complete Confirmation Modal */}
+                {/* Simple Confirmation Modal for Mentors */}
+                {completingId && completingAsMentor && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in" onClick={() => setCompletingId(null)}>
+                        <div
+                            className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-700 max-w-sm w-full mx-4 transform transition-all"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="text-center">
+                                <div className="w-20 h-20 rounded-full bg-green-50 dark:bg-green-500/10 flex items-center justify-center mx-auto mb-6 relative group">
+                                    <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping opacity-75"></div>
+                                    <span className="material-icons text-4xl text-green-500 relative z-10 transition-transform duration-300 group-hover:scale-110">check_circle</span>
+                                </div>
+                                <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">¡Marcar como Realizada!</h3>
+                                <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-[280px] mx-auto text-sm">
+                                    Confirma que esta sesión se llevó a cabo exitosamente. <strong>Este estado no podrá revertirse.</strong>
+                                </p>
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={() => setCompletingId(null)}
+                                        className="flex-1 py-3.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all"
+                                    >
+                                        Volver
+                                    </button>
+                                    <button
+                                        onClick={confirmComplete}
+                                        className="flex-1 py-3.5 px-4 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold active:scale-95 transition-all shadow-lg shadow-green-500/30"
+                                    >
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Complete Feedback Form Modal (For Students) */}
                 {
-                    completingId && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in">
+                    completingId && !completingAsMentor && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md modal-backdrop-anim overflow-hidden" onClick={() => setCompletingId(null)}>
                             <div
-                                className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-700 max-w-sm w-full mx-4 transform transition-all"
+                                className="modal-card-anim bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-700 max-w-md w-full mx-4 max-h-[85vh] flex flex-col overflow-hidden"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <div className="text-center">
-                                    <div className="w-20 h-20 rounded-full bg-green-50 dark:bg-green-500/10 flex items-center justify-center mx-auto mb-6 relative group">
-                                        <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping opacity-75"></div>
-                                        <span className="material-icons text-4xl text-green-500 relative z-10 transition-transform duration-300 group-hover:scale-110">check_circle</span>
+                                {/* Header */}
+                                <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-700">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-2xl bg-green-50 dark:bg-green-500/10 flex items-center justify-center">
+                                            <span className="material-icons text-2xl text-green-500">task_alt</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-slate-800 dark:text-white">Coffee Chat Realizado</h3>
+                                            <p className="text-xs text-slate-400">Completa el formulario para finalizar</p>
+                                        </div>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">¡Marcar como Realizada!</h3>
-                                    <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-[280px] mx-auto text-sm">
-                                        Gracias por completar esta sesión. Tu compromiso con el aprendizaje es admirable. <strong>Este estado no podrá revertirse.</strong>
-                                    </p>
-                                    <div className="flex space-x-3">
+                                </div>
+
+                                {/* Scrollable Content */}
+                                <div className="overflow-y-auto flex-1 p-6 space-y-6 custom-scrollbar">
+
+                                    {/* Question 1: Did it happen on the scheduled date? */}
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">¿La cita se dio en el día acordado?</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setFeedbackForm({ ...feedbackForm, seDioEnDiaAcordado: true })}
+                                                className={`py-3 px-4 rounded-2xl border-2 font-bold text-sm transition-all ${feedbackForm.seDioEnDiaAcordado === true
+                                                    ? 'border-green-500 bg-green-50 dark:bg-green-500/10 text-green-600'
+                                                    : 'border-slate-100 dark:border-slate-700 text-slate-500 hover:border-green-300'
+                                                    }`}
+                                            >
+                                                <span className="material-icons text-lg align-middle mr-1">check_circle</span>
+                                                Sí, en el día acordado
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFeedbackForm({ ...feedbackForm, seDioEnDiaAcordado: false })}
+                                                className={`py-3 px-4 rounded-2xl border-2 font-bold text-sm transition-all ${feedbackForm.seDioEnDiaAcordado === false
+                                                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-500/10 text-amber-600'
+                                                    : 'border-slate-100 dark:border-slate-700 text-slate-500 hover:border-amber-300'
+                                                    }`}
+                                            >
+                                                <span className="material-icons text-lg align-middle mr-1">event_busy</span>
+                                                No, otro día
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Date/Time fields if NOT on scheduled date */}
+                                    {feedbackForm.seDioEnDiaAcordado === false && (
+                                        <div className="space-y-3 p-4 bg-amber-50/50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-800/30">
+                                            <label className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">¿En qué fecha y hora se realizó?</label>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Fecha</label>
+                                                    <input
+                                                        type="date"
+                                                        value={feedbackForm.fechaRealizada}
+                                                        onChange={(e) => setFeedbackForm({ ...feedbackForm, fechaRealizada: e.target.value })}
+                                                        className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary/40"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Hora</label>
+                                                    <input
+                                                        type="time"
+                                                        value={feedbackForm.horaRealizada}
+                                                        onChange={(e) => setFeedbackForm({ ...feedbackForm, horaRealizada: e.target.value })}
+                                                        className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary/40"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Divider */}
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-px bg-slate-100 dark:bg-slate-700 flex-grow"></div>
+                                        <span className="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest">Conformidad</span>
+                                        <div className="h-px bg-slate-100 dark:bg-slate-700 flex-grow"></div>
+                                    </div>
+
+                                    {/* Question 2: General Rating */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">¿Cómo calificas la sesión en general?</label>
+                                        <div className="flex gap-2">
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setFeedbackForm({ ...feedbackForm, calificacionGeneral: star })}
+                                                    className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all text-lg ${feedbackForm.calificacionGeneral >= star
+                                                        ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-500 scale-110 shadow-md shadow-yellow-400/20'
+                                                        : 'border-slate-100 dark:border-slate-700 text-slate-300 dark:text-slate-600 hover:border-yellow-300 hover:text-yellow-400'
+                                                        }`}
+                                                >
+                                                    <span className="material-icons">star</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 font-medium">
+                                            {feedbackForm.calificacionGeneral === 0 ? 'Selecciona una calificación' :
+                                                feedbackForm.calificacionGeneral <= 2 ? 'Necesita mejorar' :
+                                                    feedbackForm.calificacionGeneral <= 3 ? 'Regular' :
+                                                        feedbackForm.calificacionGeneral === 4 ? 'Buena sesión' : '¡Excelente sesión!'}
+                                        </p>
+                                    </div>
+
+                                    {/* Question 3: Usefulness Rating */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">¿Qué tan útil fue para tu desarrollo profesional?</label>
+                                        <div className="flex gap-2">
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setFeedbackForm({ ...feedbackForm, calificacionUtilidad: star })}
+                                                    className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all text-lg ${feedbackForm.calificacionUtilidad >= star
+                                                        ? 'border-blue-400 bg-blue-50 dark:bg-blue-500/10 text-blue-500 scale-110 shadow-md shadow-blue-400/20'
+                                                        : 'border-slate-100 dark:border-slate-700 text-slate-300 dark:text-slate-600 hover:border-blue-300 hover:text-blue-400'
+                                                        }`}
+                                                >
+                                                    <span className="material-icons">star</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 font-medium">
+                                            {feedbackForm.calificacionUtilidad === 0 ? 'Selecciona una calificación' :
+                                                feedbackForm.calificacionUtilidad <= 2 ? 'Poco útil' :
+                                                    feedbackForm.calificacionUtilidad <= 3 ? 'Moderadamente útil' :
+                                                        feedbackForm.calificacionUtilidad === 4 ? 'Muy útil' : '¡Extremadamente útil!'}
+                                        </p>
+                                    </div>
+
+                                    {/* Question 4: Would you recommend? */}
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">¿Recomendarías a este mentor?</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setFeedbackForm({ ...feedbackForm, recomendaria: true })}
+                                                className={`py-3 px-4 rounded-2xl border-2 font-bold text-sm transition-all ${feedbackForm.recomendaria === true
+                                                    ? 'border-green-500 bg-green-50 dark:bg-green-500/10 text-green-600'
+                                                    : 'border-slate-100 dark:border-slate-700 text-slate-500 hover:border-green-300'
+                                                    }`}
+                                            >
+                                                <span className="material-icons text-lg align-middle mr-1">thumb_up</span>
+                                                Sí, lo recomiendo
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFeedbackForm({ ...feedbackForm, recomendaria: false })}
+                                                className={`py-3 px-4 rounded-2xl border-2 font-bold text-sm transition-all ${feedbackForm.recomendaria === false
+                                                    ? 'border-red-500 bg-red-50 dark:bg-red-500/10 text-red-600'
+                                                    : 'border-slate-100 dark:border-slate-700 text-slate-500 hover:border-red-300'
+                                                    }`}
+                                            >
+                                                <span className="material-icons text-lg align-middle mr-1">thumb_down</span>
+                                                No lo recomiendo
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Footer Actions */}
+                                <div className="p-6 pt-4 border-t border-slate-100 dark:border-slate-700 space-y-3">
+                                    {!isFeedbackValid && (
+                                        <p className="text-[10px] text-amber-500 font-bold text-center flex items-center justify-center gap-1">
+                                            <span className="material-icons text-xs">info</span>
+                                            Completa todas las preguntas para continuar
+                                        </p>
+                                    )}
+                                    <div className="flex gap-3">
                                         <button
                                             onClick={() => setCompletingId(null)}
                                             className="flex-1 py-3.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all"
@@ -809,9 +1051,14 @@ const MySessionsPage = () => {
                                         </button>
                                         <button
                                             onClick={confirmComplete}
-                                            className="flex-1 py-3.5 px-4 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold active:scale-95 transition-all shadow-lg shadow-green-500/30"
+                                            disabled={!isFeedbackValid}
+                                            className={`flex-1 py-3.5 px-4 rounded-xl font-semibold active:scale-95 transition-all flex items-center justify-center gap-2 ${isFeedbackValid
+                                                ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30'
+                                                : 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                                }`}
                                         >
-                                            Confirmar
+                                            <span className="material-icons text-sm">check</span>
+                                            Coffee Chat Realizado
                                         </button>
                                     </div>
                                 </div>

@@ -291,6 +291,49 @@ async def update_appointment_status(
         raise HTTPException(status_code=404, detail="Cita no encontrada o no tienes permiso para modificarla.")
     
     appt.estado = new_status
+    
+    # If marking as completed, save feedback data
+    if new_status == 'realizada':
+        from datetime import date as date_cls, time as time_cls
+        
+        # Whether it happened on the scheduled date
+        se_dio = status_data.get("se_dio_en_dia_acordado")
+        if se_dio is not None:
+            appt.se_dio_en_dia_acordado = bool(se_dio)
+        
+        # Actual date/time if different from scheduled
+        fecha_real = status_data.get("fecha_realizada")
+        hora_real = status_data.get("hora_realizada")
+        
+        if se_dio:
+            # It happened on the scheduled date
+            appt.fecha_realizada = appt.fecha_programada
+            appt.hora_realizada = appt.hora_programada
+        else:
+            if fecha_real:
+                try:
+                    appt.fecha_realizada = date_cls.fromisoformat(fecha_real)
+                except:
+                    pass
+            if hora_real:
+                try:
+                    appt.hora_realizada = dt.strptime(hora_real, '%H:%M').time()
+                except:
+                    pass
+        
+        # Satisfaction ratings
+        cal_general = status_data.get("calificacion_general")
+        if cal_general is not None:
+            appt.calificacion_general = int(cal_general)
+        
+        cal_utilidad = status_data.get("calificacion_utilidad")
+        if cal_utilidad is not None:
+            appt.calificacion_utilidad = int(cal_utilidad)
+        
+        recomendaria = status_data.get("recomendaria_mentor")
+        if recomendaria is not None:
+            appt.recomendaria_mentor = bool(recomendaria)
+    
     db.commit()
     return {"message": f"Estado actualizado a '{new_status}'", "status": new_status}
 

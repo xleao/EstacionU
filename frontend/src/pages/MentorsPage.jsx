@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import FluidBackground from '../components/FluidBackground';
 import CoffeeChatModal from '../components/CoffeeChatModal';
-import { SECTOR_OPTIONS, AREA_OPTIONS } from '../components/CustomCombobox';
+import { useCatalogs } from '../hooks/useCatalogs';
 
 export const MentorCard = ({ name, role, area, bio, tags, image, schedule, disponibilidades, linkedin_url, url_logo_empresa, empresa, onBookChat, index }) => {
     return (
@@ -108,6 +108,7 @@ const MentorsPage = () => {
     const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedMentor, setSelectedMentor] = useState(null);
+    const { AREA_OPTIONS, SECTOR_OPTIONS } = useCatalogs();
 
     const handleOpenModal = (mentor) => {
         setSelectedMentor(mentor);

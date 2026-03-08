@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { SECTOR_OPTIONS, AREA_OPTIONS, CustomCombobox } from './CustomCombobox';
+import { CustomCombobox } from './CustomCombobox';
+import { useCatalogs } from '../hooks/useCatalogs';
 
 // Step 1: Info card – shows requirements
 const StepInfo = ({ onNext, onClose }) => (
@@ -93,6 +94,7 @@ const StepInfo = ({ onNext, onClose }) => (
 // Step 2: Form card
 const StepForm = ({ onClose, onSuccess }) => {
     const { user } = useAuth();
+    const { AREA_OPTIONS, SECTOR_OPTIONS } = useCatalogs();
     const scrollRef = React.useRef(null);
     const [formData, setFormData] = useState({
         sector_nombre: '',

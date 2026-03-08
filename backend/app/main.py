@@ -6,7 +6,7 @@ from app.database import engine
 from app import models
 
 # Import routers
-from app.api.routers import auth, users, appointments, admin
+from app.api.routers import auth, users, appointments, admin, catalogs
 
 # Create upload directory
 UPLOAD_DIR = "static/uploads"
@@ -37,6 +37,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(appointments.router)
 app.include_router(admin.router)
+app.include_router(catalogs.router)
 
 # Analytics middleware - tracks page visits
 from app.middleware.analytics import AnalyticsMiddleware
@@ -68,3 +69,11 @@ async def websocket_mentors(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
+# Start reminder scheduler on app startup
+from app.services.reminder_scheduler import reminder_loop
+import asyncio
+
+@app.on_event("startup")
+async def start_reminder_scheduler():
+    asyncio.create_task(reminder_loop())

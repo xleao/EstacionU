@@ -26,6 +26,8 @@ const AdminUsersPage = () => {
         carrera: '',
         password: ''
     });
+    const [deletingUserId, setDeletingUserId] = useState(null);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -109,18 +111,28 @@ const AdminUsersPage = () => {
         }
     };
 
-    const handleDeleteUser = async (userId) => {
-        if (!window.confirm('¿Estás seguro de eliminar este usuario? Se borrará TODA su información relacionada (citas, perfiles, etc).')) return;
+    const handleDeleteUser = (userId) => {
+        // Prevent admin from deleting their own account
+        if (user && user.id === userId) return;
+        setDeletingUserId(userId);
+        setDeleteSuccess(false);
+    };
 
+    const confirmDeleteUser = async () => {
+        if (!deletingUserId) return;
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/admin/users/${userId}`, {
+            const response = await fetch(`/api/admin/users/${deletingUserId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
-                setUsers(users.filter(u => u.id !== userId));
-                alert('Usuario eliminado correctamente');
+                setUsers(users.filter(u => u.id !== deletingUserId));
+                setDeleteSuccess(true);
+                setTimeout(() => {
+                    setDeletingUserId(null);
+                    setDeleteSuccess(false);
+                }, 1800);
             }
         } catch (error) {
             console.error("Error deleting user:", error);
@@ -257,7 +269,15 @@ const AdminUsersPage = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-1">
                                                 <button onClick={() => handleOpenModal('edit', u)} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all" title="Editar"><span className="material-icons text-xl">edit</span></button>
-                                                <button onClick={() => handleDeleteUser(u.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Eliminar"><span className="material-icons text-xl">delete</span></button>
+                                                {user && user.id === u.id ? (
+                                                    <button disabled className="p-1.5 text-slate-200 dark:text-slate-600 rounded-lg cursor-not-allowed" title="No puedes eliminar tu propia cuenta">
+                                                        <span className="material-icons text-xl">delete</span>
+                                                    </button>
+                                                ) : (
+                                                    <button onClick={() => handleDeleteUser(u.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Eliminar">
+                                                        <span className="material-icons text-xl">delete</span>
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))
@@ -329,6 +349,64 @@ const AdminUsersPage = () => {
                                     <button type="submit" className="px-8 py-2.5 bg-primary text-white rounded-xl font-extrabold hover:bg-blue-600 shadow-lg shadow-primary/20 active:scale-95 transition-all">{modalMode === 'add' ? 'Crear Usuario' : 'Guardar Cambios'}</button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Delete Confirmation Modal */}
+                {deletingUserId && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md" style={{ animation: 'adminFadeIn 0.25s ease-out both' }} onClick={() => !deleteSuccess && setDeletingUserId(null)}>
+                        <style>{`
+                            @keyframes adminFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                            @keyframes adminScaleUp { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+                            @keyframes adminCheckBounce { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+                        `}</style>
+                        <div
+                            className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-700 max-w-sm w-full mx-4"
+                            style={{ animation: 'adminScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both' }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {!deleteSuccess ? (
+                                <div className="text-center">
+                                    <div className="w-20 h-20 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mx-auto mb-6 relative">
+                                        <div className="absolute inset-0 bg-red-500/20 rounded-full animate-ping opacity-75"></div>
+                                        <span className="material-icons text-4xl text-red-500 relative z-10">person_remove</span>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">¿Eliminar usuario?</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 mb-2 text-sm">
+                                        Estás a punto de eliminar a <strong className="text-slate-700 dark:text-slate-200">{users.find(u => u.id === deletingUserId)?.nombre_completo || 'este usuario'}</strong>
+                                    </p>
+                                    <p className="text-red-400 dark:text-red-400 mb-8 text-xs font-semibold bg-red-50 dark:bg-red-500/10 rounded-xl py-2 px-3 inline-block">
+                                        <span className="material-icons text-xs align-middle mr-1">warning</span>
+                                        Se eliminará TODA su información (citas, perfiles, etc.)
+                                    </p>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => setDeletingUserId(null)}
+                                            className="flex-1 py-3.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all"
+                                        >
+                                            No, mantener
+                                        </button>
+                                        <button
+                                            onClick={confirmDeleteUser}
+                                            className="flex-1 py-3.5 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold active:scale-95 transition-all shadow-lg shadow-red-500/30 flex items-center justify-center gap-2"
+                                        >
+                                            <span className="material-icons text-sm">delete_forever</span>
+                                            Sí, eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center">
+                                    <div className="w-20 h-20 rounded-full bg-green-50 dark:bg-green-500/10 flex items-center justify-center mx-auto mb-6" style={{ animation: 'adminCheckBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both' }}>
+                                        <span className="material-icons text-4xl text-green-500">check_circle</span>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">¡Eliminado!</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">
+                                        El usuario ha sido eliminado correctamente.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

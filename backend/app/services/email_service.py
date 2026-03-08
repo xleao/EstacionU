@@ -709,3 +709,127 @@ def send_destacado_rejected_email(to_email: str, name: str, notas_admin: str = N
         logging.info(f"Destacado rejected email successfully sent to {to_email}")
     except Exception as e:
         logging.error(f"Failed to send email to {to_email}: {e}")
+
+
+def send_reminder_email(to_email: str, name: str, other_name: str, date_str: str, time_str: str, tema: str, is_mentor: bool = False):
+    if settings.smtp_user == "TUCORREO@gmail.com":
+        logging.warning("SMTP not configured. Skipping reminder email.")
+        return
+
+    role_label = "tu estudiante" if is_mentor else "tu mentor"
+    subject = f"⏰ Recordatorio: Tu Coffee Chat es pronto - {date_str}"
+
+    html_content = f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <div style="background-color:#f8fafc;padding:30px 10px;">
+    <table align="center" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;background-color:#ffffff;border-radius:20px;margin:0 auto;overflow:hidden;border:1px solid #e2e8f0;">
+
+      <tr>
+        <td align="center" style="background-color:#fdfbf7;padding:36px 20px 28px 20px;border-bottom:1px solid #f1f5f9;">
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="center" valign="middle">
+                <div style="width:56px;height:56px;border-radius:50%;background-color:#fef3c7;border:2px solid #f59e0b;text-align:center;line-height:56px;font-size:26px;">&#9200;</div>
+              </td>
+              <td width="40" align="center" valign="middle">
+                <div style="border-top:2px dashed #fde68a;width:30px;"></div>
+              </td>
+              <td align="center" valign="middle">
+                <div style="width:56px;height:56px;border-radius:50%;background-color:#ffffff;border:2px solid #e2e8f0;text-align:center;line-height:56px;font-size:26px;">&#9749;</div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:32px 28px 8px 28px;text-align:center;">
+          <h1 style="color:#0f172a;font-size:26px;font-weight:700;margin:0 0 16px 0;">&#161;Tu Coffee Chat es pronto!</h1>
+          <p style="font-size:15px;line-height:1.65;margin:0 0 28px 0;">
+            <span style="color:#64748b;">Hola </span>
+            <strong style="color:#0f172a;">{name}</strong><span style="color:#64748b;">,
+            te recordamos que tienes un Coffee Chat programado con </span>
+            <strong style="color:#3b82f6;">{other_name}</strong>
+            <span style="color:#64748b;">. &#161;Prep&#225;rate para una gran sesi&#243;n!</span>
+          </p>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:0 28px 28px 28px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;">
+            <tr>
+              <td style="padding:14px 20px;">
+                <p style="margin:0;font-size:14px;color:#334155;">&#128197; <strong>Fecha:</strong> <span style="color:#3b82f6;">{date_str}</span></p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:10px 20px;border-top:1px solid #f1f5f9;">
+                <p style="margin:0;font-size:14px;color:#334155;">&#9200; <strong>Hora:</strong> {time_str}</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:10px 20px;border-top:1px solid #f1f5f9;">
+                <p style="margin:0;font-size:14px;color:#334155;">&#128161; <strong>Tema:</strong> {tema}</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center" style="padding:0 28px 32px 28px;">
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="center" style="background-color:#f59e0b;border-radius:12px;">
+                <a href="https://estacionu.com/sesiones" target="_blank"
+                   style="display:inline-block;padding:15px 36px;font-family:-apple-system,sans-serif;font-size:15px;color:#ffffff;text-decoration:none;font-weight:700;border-radius:12px;">
+                  Ver mis Sesiones &rarr;
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center" style="padding:0 20px 24px 20px;">
+          <p style="color:#94a3b8;font-size:13px;margin:0;">
+            &#191;Necesitas ayuda? <a href="#" style="color:#3b82f6;text-decoration:none;font-weight:600;">Centro de Ayuda</a>
+          </p>
+        </td>
+      </tr>
+
+    </table>
+
+    <table align="center" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;">
+      <tr>
+        <td align="center" style="padding:16px;">
+          <p style="color:#cbd5e1;font-size:11px;margin:0;">&copy; 2026 Estaci&#243;nU+. Todos los derechos reservados.</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>"""
+
+    msg = MIMEMultipart()
+    msg['From'] = f"{settings.smtp_from_name} <{settings.smtp_user}>"
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+
+    try:
+        server = smtplib.SMTP(settings.smtp_host, settings.smtp_port)
+        server.starttls()
+        server.login(settings.smtp_user, settings.smtp_password)
+        server.send_message(msg)
+        server.quit()
+        logging.info(f"Reminder email successfully sent to {to_email}")
+    except Exception as e:
+        logging.error(f"Failed to send reminder email to {to_email}: {e}")

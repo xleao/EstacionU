@@ -791,3 +791,144 @@ async def desbloquear_mentor_destacado(
     
     db.commit()
     return {"message": "Mentor desbloqueado. Ya puede volver a postular.", "bloqueado": False}
+
+
+@router.get("/coffee-chats/users")
+def get_all_users_with_chats(
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    users = db.query(models.User).filter(models.User.tipo_usuario.in_(['estudiante', 'mentor', 'egresado'])).all()
+    results = []
+    
+    for u in users:
+        mentee_count = db.query(models.Appointment).filter(models.Appointment.usuario_mentee_id == u.id).count()
+        mentor_count = 0
+        if u.tipo_usuario in ['mentor', 'egresado']:
+            perfil = db.query(models.MentorProfile).filter(models.MentorProfile.usuario_id == u.id).first()
+            if perfil:
+                mentor_count = db.query(models.Appointment).filter(models.Appointment.mentor_id == perfil.id).count()
+                
+        total = mentee_count + mentor_count
+        if total > 0 or u.tipo_usuario in ['mentor', 'egresado', 'estudiante']:
+            results.append({
+                "id": u.id,
+                "nombre_completo": u.nombre_completo or u.correo,
+                "tipo_usuario": u.tipo_usuario,
+                "correo": u.correo,
+                "total_chats": total,
+                "mentee_chats": mentee_count,
+                "mentor_chats": mentor_count,
+                "url_foto": u.perfil.url_foto if u.perfil else None
+            })
+            
+    # Sort descending by total chats
+    results.sort(key=lambda x: x["total_chats"], reverse=True)
+    return results
+
+@router.get("/coffee-chats/users/{user_id}")
+def get_user_chats(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+    resultados = []
+    
+    # As mentee
+    citas_mentee = db.query(models.Appointment).filter(models.Appointment.usuario_mentee_id == user_id).all()
+    for c in citas_mentee:
+        mentor_profile = db.query(models.MentorProfile).filter(models.MentorProfile.id == c.mentor_id).first()
+        mentor_user = None
+        if mentor_profile:
+            mentor_user = db.query(models.User).filter(models.User.id == mentor_profile.usuario_id).first()
+            
+        resultados.append({
+            "id": c.id,
+            "rol_en_cita": "Estudiante",
+            "otra_persona_id": mentor_user.id if mentor_user else None,
+            "otra_persona": mentor_user.nombre_completo if mentor_user else "Mentor Borrado",
+            "tema": c.tema or "N/A",
+            "estado": c.estado,
+            "fecha": c.fecha_programada,
+            "hora": c.hora_programada,
+            "calificacion_utilidad": c.calificacion_utilidad,
+            "calificacion_general": c.calificacion_general,
+            "recomendaria": c.recomendaria_mentor,
+            "se_dio_en_dia": c.se_dio_en_dia_acordado,
+            "otro_texto": c.otro_texto,
+            "fecha_realizada": c.fecha_realizada,
+            "hora_realizada": c.hora_realizada
+        })
+        
+    # As mentor
+    perfil = db.query(models.MentorProfile).filter(models.MentorProfile.usuario_id == user_id).first()
+    if perfil:
+        citas_mentor = db.query(models.Appointment).filter(models.Appointment.mentor_id == perfil.id).all()
+        for c in citas_mentor:
+            mentee = db.query(models.User).filter(models.User.id == c.usuario_mentee_id).first()
+            resultados.append({
+                "id": c.id,
+                "rol_en_cita": "Mentor" if user.tipo_usuario == 'mentor' else "Egresado",
+                "otra_persona_id": mentee.id if mentee else None,
+                "otra_persona": mentee.nombre_completo if mentee else "Estudiante Borrado",
+                "tema": c.tema or "N/A",
+                "estado": c.estado,
+                "fecha": c.fecha_programada,
+                "hora": c.hora_programada,
+                "calificacion_utilidad": c.calificacion_utilidad,
+                "calificacion_general": c.calificacion_general,
+                "recomendaria": c.recomendaria_mentor,
+                "se_dio_en_dia": c.se_dio_en_dia_acordado,
+                "otro_texto": c.otro_texto,
+                "fecha_realizada": c.fecha_realizada,
+                "hora_realizada": c.hora_realizada
+            })
+            
+    # Sort descending (most recent first)
+    resultados.sort(key=lambda x: str(x["fecha"]) + str(x["hora"]) if x["fecha"] else "", reverse=True)
+    return resultados
+
+@router.get("/coffee-chats/stats")
+def get_coffee_chat_stats_mentors(
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    # Top mentors based on average stars
+    mentors = db.query(models.MentorProfile).all()
+    stats = []
+    for m in mentors:
+        appointments = db.query(models.Appointment).filter(
+            models.Appointment.mentor_id == m.id,
+            models.Appointment.estado == 'realizada',
+            models.Appointment.calificacion_general.isnot(None)
+        ).all()
+        
+        user = db.query(models.User).filter(models.User.id == m.usuario_id).first()
+        if not user:
+            continue
+            
+        if len(appointments) > 0:
+            avg_utilidad = sum([a.calificacion_utilidad or 0 for a in appointments]) / len(appointments)
+            avg_general = sum([a.calificacion_general or 0 for a in appointments]) / len(appointments)
+            total_recomendaciones = sum([1 for a in appointments if a.recomendaria_mentor])
+            avg_total = (avg_utilidad + avg_general) / 2
+            
+            stats.append({
+                "mentor_id": user.id,
+                "mentor_name": user.nombre_completo or user.correo,
+                "tipo_usuario": user.tipo_usuario,
+                "url_foto": user.perfil.url_foto if user.perfil else None,
+                "avg_utilidad": round(avg_utilidad, 1),
+                "avg_general": round(avg_general, 1),
+                "total_reviews": len(appointments),
+                "total_recomendaciones": total_recomendaciones,
+                "avg_total": round(avg_total, 1)
+            })
+                
+    # sort by highest avg_total then by total_reviews
+    stats.sort(key=lambda x: (x["avg_total"], x["total_reviews"]), reverse=True)
+    return stats[:10]  # top 10
