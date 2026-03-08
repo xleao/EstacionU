@@ -54,7 +54,8 @@ export const useCatalogs = () => {
                     if (resSectores.ok) {
                         const data = await resSectores.json();
                         if (data.length > 0) {
-                            cachedSectores = [...data.map((item) => item.nombre), "Otros"];
+                            const filtered = data.filter(item => item.nombre.toLowerCase() !== "otros" && item.nombre.toLowerCase() !== "others");
+                            cachedSectores = [...filtered.map((item) => item.nombre), "Otros"];
                             setSectores(cachedSectores);
                         }
                     }
@@ -65,7 +66,8 @@ export const useCatalogs = () => {
                     if (resAreas.ok) {
                         const data = await resAreas.json();
                         if (data.length > 0) {
-                            cachedAreas = [...data.map((item) => item.nombre), "Otros"];
+                            const filtered = data.filter(item => item.nombre.toLowerCase() !== "otros" && item.nombre.toLowerCase() !== "others");
+                            cachedAreas = [...filtered.map((item) => item.nombre), "Otros"];
                             setAreas(cachedAreas);
                         }
                     }
