@@ -29,13 +29,14 @@ async def read_users_me(
     sector = mentor_profile.sectores[0].nombre if mentor_profile and mentor_profile.sectores else ""
     area = mentor_profile.areas[0].nombre if mentor_profile and mentor_profile.areas else ""
 
-    # Onboarding requires BOTH a real assigned role AND a real university
+    # Onboarding requires a real assigned role and having passed the 'Pendiente' state
     # If tipo_usuario is 'usuario' (default for new Google users), onboarding is NEVER complete
     UNASSIGNED_ROLES = ('usuario', 'user', '', None)
     has_real_role = current_user.tipo_usuario not in UNASSIGNED_ROLES
     uni = education.universidad if education else ""
-    has_real_uni = bool(uni and uni not in ("Pendiente", "Completada", ""))
-    onboarding_done = has_real_role and has_real_uni
+    # "Pendiente" is set on registration. If it is anything else (including ""), onboarding is complete.
+    has_completed_onboarding_step = uni != "Pendiente"
+    onboarding_done = has_real_role and has_completed_onboarding_step
 
     # Featured mentor application status
     solicitud_status = None
