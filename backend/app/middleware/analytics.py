@@ -60,20 +60,28 @@ class AnalyticsMiddleware(BaseHTTPMiddleware):
         return response
 
     async def _log_visit(self, ip: str, path: str, user_agent: str):
-        try:
-            geo = await get_geo_info(ip)
+        from starlette.concurrency import run_in_threadpool
+
+        def save_visit_sync(ip_address, geo_info, req_path, agent):
             db = SessionLocal()
             try:
                 visit = models.PageVisit(
-                    ip_address=ip,
-                    country=geo["country"],
-                    city=geo["city"],
-                    path=path,
-                    user_agent=user_agent
+                    ip_address=ip_address,
+                    country=geo_info["country"],
+                    city=geo_info["city"],
+                    path=req_path,
+                    user_agent=agent
                 )
                 db.add(visit)
                 db.commit()
+            except Exception:
+                pass
             finally:
                 db.close()
+
+        try:
+            geo = await get_geo_info(ip)
+            # Optimización para VPS: Se envía a un Hilo secundario para que no bloquee todas las visitas del servidor
+            await run_in_threadpool(save_visit_sync, ip, geo, path, user_agent)
         except Exception:
             pass  # Silently fail - analytics should never break the app
