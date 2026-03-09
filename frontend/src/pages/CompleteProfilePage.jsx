@@ -4,18 +4,12 @@ import WaveBackground from '../components/WaveBackground';
 import { useAuth } from '../context/AuthContext';
 import { CustomCombobox } from '../components/CustomCombobox';
 
-const UNIVERSITY_OPTIONS = ['UNI', 'Otros'];
-const CAREER_OPTIONS = [
-    'Ingeniería Industrial',
-    'Ingeniería de Inteligencia Artificial',
-    'Ingeniería de Software',
-    'Ingeniería de Sistemas',
-    'Otros'
-];
+import { useCatalogs } from '../hooks/useCatalogs';
 
 const CompleteProfilePage = () => {
     const navigate = useNavigate();
     const { user, refreshUser } = useAuth();
+    const { INSTITUTION_OPTIONS, CAREER_OPTIONS } = useCatalogs();
 
     const [step, setStep] = useState(1); // 1 = datos personales, 2 = historial académico
     const [loading, setLoading] = useState(false);
@@ -340,7 +334,7 @@ const CompleteProfilePage = () => {
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Institución</label>
                                             <CustomCombobox
                                                 name="universidad"
-                                                options={UNIVERSITY_OPTIONS}
+                                                options={INSTITUTION_OPTIONS}
                                                 placeholder="Ej. UNI, UPC..."
                                                 value={newHistory.universidad}
                                                 onChange={handleNewHistoryChange}

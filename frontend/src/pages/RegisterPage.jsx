@@ -5,18 +5,12 @@ import { useAuth } from '../context/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
 import { CustomCombobox } from '../components/CustomCombobox';
 
-const UNIVERSITY_OPTIONS = ['UNI', 'Otros'];
-const CAREER_OPTIONS = [
-    'Ingeniería Industrial',
-    'Ingeniería de Inteligencia Artificial',
-    'Ingeniería de Software',
-    'Ingeniería de Sistemas',
-    'Otros'
-];
+import { useCatalogs } from '../hooks/useCatalogs';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
     const { register, loginWithGoogle } = useAuth();
+    const { INSTITUTION_OPTIONS, CAREER_OPTIONS } = useCatalogs();
 
     // Steps: 'role' → 'profile' → 'academic'
     const [currentStep, setCurrentStep] = useState('role');
@@ -36,8 +30,8 @@ const RegisterPage = () => {
         celular: '',
         fechaNacimiento: '',
         genero: '',
-        universidad: '',
-        carrera: '',
+        universidad: '', // Added to formData for primary academic info
+        carrera: '',     // Added to formData for primary academic info
         anioInicio: '',
         anioFin: '',
         linkedin: '',
@@ -103,6 +97,8 @@ const RegisterPage = () => {
         formData.celular.trim() &&
         formData.fechaNacimiento &&
         formData.genero &&
+        formData.universidad && // New validation for primary academic info
+        formData.carrera &&     // New validation for primary academic info
         formData.terms;
 
     const validateProfile = () => {
@@ -113,6 +109,8 @@ const RegisterPage = () => {
         if (!formData.celular.trim()) return 'El celular es obligatorio.';
         if (!formData.fechaNacimiento) return 'La fecha de nacimiento es obligatoria.';
         if (!formData.genero) return 'El género es obligatorio.';
+        if (!formData.universidad) return 'La universidad es obligatoria.'; // New validation
+        if (!formData.carrera) return 'La carrera es obligatoria.';         // New validation
         if (!formData.terms) return 'Debes aceptar los términos y condiciones.';
         return null;
     };
@@ -147,8 +145,9 @@ const RegisterPage = () => {
             // 1. Register account
             // This will create account, set role, update profile in AuthContext
 
-            // Primary academic data from Historial Académico section
-            const primaryEdu = educationList[0] || newHistory;
+            // Primary academic data from formData
+            // Additional academic data from educationList
+            const academicHistory = educationList.length > 0 ? educationList : [];
 
             await register(
                 nombre,
@@ -161,11 +160,17 @@ const RegisterPage = () => {
                     telefono_movil: formData.celular,
                     fecha_nacimiento: formData.fechaNacimiento || null,
                     genero: formData.genero,
-                    universidad: primaryEdu.universidad,
-                    carrera: primaryEdu.carrera,
-                    anio_inicio: primaryEdu.anioInicio ? parseInt(primaryEdu.anioInicio) : null,
-                    anio_fin: primaryEdu.anioFin ? (primaryEdu.anioFin === 'cursando' ? -1 : parseInt(primaryEdu.anioFin)) : null,
+                    universidad: formData.universidad, // Use from formData
+                    carrera: formData.carrera,         // Use from formData
+                    anio_inicio: formData.anioInicio ? parseInt(formData.anioInicio) : null,
+                    anio_fin: formData.anioFin ? (formData.anioFin === 'cursando' ? -1 : parseInt(formData.anioFin)) : null,
                     url_linkedin: formData.linkedin,
+                    academic_history: academicHistory.map(edu => ({
+                        universidad: edu.universidad,
+                        carrera: edu.carrera,
+                        anio_inicio: edu.anioInicio ? parseInt(edu.anioInicio) : null,
+                        anio_fin: edu.anioFin ? (edu.anioFin === 'cursando' ? -1 : parseInt(edu.anioFin)) : null,
+                    }))
                 }
             );
             // register() handles navigation
@@ -417,7 +422,31 @@ const RegisterPage = () => {
                                         </select>
                                     </div>
 
+                                    {/* Universidad */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Institución *</label>
+                                        <CustomCombobox
+                                            name="universidad"
+                                            options={INSTITUTION_OPTIONS}
+                                            placeholder="Ej. UNI, San Marcos, UPC..."
+                                            value={formData.universidad}
+                                            onChange={(e) => setFormData({ ...formData, universidad: e.target.value })}
+                                            className={`${fieldBorder(formData.universidad)}`}
+                                        />
+                                    </div>
 
+                                    {/* Carrera */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Carrera / Programa *</label>
+                                        <CustomCombobox
+                                            name="carrera"
+                                            options={CAREER_OPTIONS}
+                                            placeholder="Ej. Ingeniería de Sistemas"
+                                            value={formData.carrera}
+                                            onChange={(e) => setFormData({ ...formData, carrera: e.target.value })}
+                                            className={`${fieldBorder(formData.carrera)}`}
+                                        />
+                                    </div>
 
                                     {/* LinkedIn */}
                                     <div className="space-y-2 md:col-span-2">
@@ -551,7 +580,7 @@ const RegisterPage = () => {
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Institución</label>
                                             <CustomCombobox
                                                 name="universidad"
-                                                options={UNIVERSITY_OPTIONS}
+                                                options={INSTITUTION_OPTIONS}
                                                 placeholder="Ej. UNI, UPC..."
                                                 value={newHistory.universidad}
                                                 onChange={handleNewHistoryChange}

@@ -4,19 +4,13 @@ import Navbar from '../components/Navbar';
 import LakeBackground from '../components/LakeBackground';
 import { CustomCombobox } from '../components/CustomCombobox';
 import { useCatalogs } from '../hooks/useCatalogs';
+import { useAuth } from '../context/AuthContext';
 
-const UNIVERSITY_OPTIONS = ['UNI', 'Otros'];
-const CAREER_OPTIONS = [
-    'Ingeniería Industrial',
-    'Ingeniería de Inteligencia Artificial',
-    'Ingeniería de Software',
-    'Ingeniería de Sistemas',
-    'Otros'
-];
+
 
 const AccountPage = () => {
     const { user, refreshUser } = useAuth();
-    const { AREA_OPTIONS, SECTOR_OPTIONS } = useCatalogs();
+    const { AREA_OPTIONS, SECTOR_OPTIONS, INSTITUTION_OPTIONS, CAREER_OPTIONS } = useCatalogs();
 
     // Status message state
     const [statusMessage, setStatusMessage] = useState(null);
@@ -353,7 +347,7 @@ const AccountPage = () => {
 
                     <div className="space-y-6">
                         {/* Datos Personales */}
-                        <section className="profile-section bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-700/50 overflow-hidden relative hover:shadow-lg hover:shadow-primary/5 transition-all duration-500" style={{ animationDelay: '0.1s' }}>
+                        <section className="profile-section bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-700/50 overflow-visible relative z-30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-500" style={{ animationDelay: '0.1s' }}>
                             <div className="px-7 py-5 border-b border-[#D8D2C3]/30 dark:border-slate-700/50 flex justify-between items-center relative z-10">
                                 <h2 className="text-xl font-bold flex items-center gap-2 text-[#111417] dark:text-white">
                                     <span className="material-icons text-[#3C96E0] dark:text-primary">person</span> Datos Personales
@@ -484,22 +478,24 @@ const AccountPage = () => {
 
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Institución / Centro de Estudios</label>
-                                            <input
+                                            <CustomCombobox
                                                 name="universidad"
-                                                className="w-full rounded-2xl border bg-[#F4FAFF] dark:bg-slate-900/80 border-[#3C96E0]/40 dark:border-primary/40 px-5 py-3 text-sm font-semibold text-[#111417] dark:text-white focus:ring-2 focus:ring-[#3C96E0]/30 focus:border-[#3C96E0] dark:focus:border-primary focus:bg-[#FFFFFF] dark:focus:bg-slate-800 dark:bg-slate-800/80 dark:backdrop-blur-xl shadow-sm shadow-[#3C96E0]/5 outline-none transition-all disabled:bg-[#F9FAFB] dark:disabled:bg-slate-900/40 dark:bg-slate-900/60 disabled:border-transparent disabled:text-[#111417] dark:disabled:text-slate-500 dark:text-white disabled:shadow-none disabled:opacity-100 disabled:cursor-default"
-                                                type="text"
+                                                options={INSTITUTION_OPTIONS}
+                                                placeholder="Seleccione institución..."
                                                 value={formData.universidad}
                                                 onChange={handleChange}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Carrera / Programa</label>
-                                            <input
+                                            <CustomCombobox
                                                 name="carrera"
-                                                className="w-full rounded-2xl border bg-[#F4FAFF] dark:bg-slate-900/80 border-[#3C96E0]/40 dark:border-primary/40 px-5 py-3 text-sm font-semibold text-[#111417] dark:text-white focus:ring-2 focus:ring-[#3C96E0]/30 focus:border-[#3C96E0] dark:focus:border-primary focus:bg-[#FFFFFF] dark:focus:bg-slate-800 dark:bg-slate-800/80 dark:backdrop-blur-xl shadow-sm shadow-[#3C96E0]/5 outline-none transition-all disabled:bg-[#F9FAFB] dark:disabled:bg-slate-900/40 dark:bg-slate-900/60 disabled:border-transparent disabled:text-[#111417] dark:disabled:text-slate-500 dark:text-white disabled:shadow-none disabled:opacity-100 disabled:cursor-default"
-                                                type="text"
+                                                options={CAREER_OPTIONS}
+                                                placeholder="Seleccione carrera..."
                                                 value={formData.carrera}
                                                 onChange={handleChange}
+                                                disabled={!isEditing}
                                             />
                                         </div>
 
@@ -555,7 +551,7 @@ const AccountPage = () => {
 
                         {/* Perfil de Mentor (Solo para Mentores Destacados) */}
                         {user?.role === 'mentor' && user?.destacado === true && (
-                            <section className="profile-section bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-700/50 overflow-hidden relative z-10 hover:shadow-lg hover:shadow-primary/5 transition-all duration-500" style={{ animationDelay: '0.15s' }}>
+                            <section className="profile-section bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-700/50 overflow-visible relative z-20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-500" style={{ animationDelay: '0.15s' }}>
                                 <div className="px-7 py-5 border-b border-[#D8D2C3]/30 dark:border-slate-700/50 flex justify-between items-center relative z-10">
                                     <h2 className="text-xl font-bold flex items-center gap-2 text-[#111417] dark:text-white">
                                         <span className="material-icons text-[#3C96E0] dark:text-primary">star</span> Perfil Público de Mentor
@@ -778,7 +774,7 @@ const AccountPage = () => {
                         )}
 
                         {/* Historial Académico */}
-                        <section className="profile-section bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-700/50 overflow-hidden relative z-10 hover:shadow-lg hover:shadow-primary/5 transition-all duration-500" style={{ animationDelay: '0.2s' }}>
+                        <section className="profile-section bg-white dark:bg-slate-800/80 dark:backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-700/50 overflow-visible relative z-10 hover:shadow-lg hover:shadow-primary/5 transition-all duration-500" style={{ animationDelay: '0.2s' }}>
                             <div className="px-7 py-5 border-b border-[#D8D2C3]/30 dark:border-slate-700/50 flex justify-between items-center relative z-10">
                                 <h2 className="text-xl font-bold flex items-center gap-2 text-[#111417] dark:text-white">
                                     <span className="material-icons text-[#3C96E0] dark:text-primary">school</span> Historial Académico
@@ -887,18 +883,18 @@ const AccountPage = () => {
                                             <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Institución / Centro de Estudios</label>
                                             <CustomCombobox
                                                 name="universidad"
-                                                options={UNIVERSITY_OPTIONS}
-                                                placeholder="Ej. UNI, Cibertec, UPC..."
+                                                options={INSTITUTION_OPTIONS}
+                                                placeholder="Ej. UNI, San Marcos, UPC..."
                                                 value={newHistory.universidad}
                                                 onChange={handleNewHistoryChange}
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Carrera / Programa</label>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Carrera / Programa</label>
                                             <CustomCombobox
                                                 name="carrera"
                                                 options={CAREER_OPTIONS}
-                                                placeholder="Ej. Ing. de Sistemas, Diseño Gráfico..."
+                                                placeholder="Ej. Ingeniería de Sistemas"
                                                 value={newHistory.carrera}
                                                 onChange={handleNewHistoryChange}
                                             />

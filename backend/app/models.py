@@ -137,6 +137,16 @@ class Theme(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, nullable=False)
 
+class Institution(Base):
+    __tablename__ = "instituciones"
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, nullable=False)
+
+class Career(Base):
+    __tablename__ = "carreras"
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, nullable=False)
+
 # --- Citas ---
 
 class Appointment(Base):

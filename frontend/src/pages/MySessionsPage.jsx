@@ -954,7 +954,8 @@ const MySessionsPage = () => {
 
                                     {/* Question 2: General Rating */}
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">¿Cómo calificas la sesión en general?</label>
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">¿Cómo fue la experiencia de plataforma?</label>
+                                        <p className="text-[10px] text-slate-400 font-medium -mt-1">(agendar, notificaciones, etc.)</p>
                                         <div className="flex gap-2">
                                             {[1, 2, 3, 4, 5].map(star => (
                                                 <button
@@ -980,7 +981,8 @@ const MySessionsPage = () => {
 
                                     {/* Question 3: Usefulness Rating */}
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">¿Qué tan útil fue para tu desarrollo profesional?</label>
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">¿Cómo fue la experiencia del contenido del Coffee Chat?</label>
+                                        <p className="text-[10px] text-slate-400 font-medium -mt-1">(tiempo suficiente, el mentor respondió bien sus preguntas, etc.)</p>
                                         <div className="flex gap-2">
                                             {[1, 2, 3, 4, 5].map(star => (
                                                 <button

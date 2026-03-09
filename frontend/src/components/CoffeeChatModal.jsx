@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCatalogs } from '../hooks/useCatalogs';
 
 const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
     const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
     const [status, setStatus] = useState(null); // 'loading', 'success', 'error'
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { THEME_OPTIONS } = useCatalogs();
 
     // Reset form when modal opens or mentor changes
     useEffect(() => {
@@ -302,8 +304,8 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
                                                                 type="button"
                                                                 onClick={() => handleDateChange(d.value)}
                                                                 className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-all flex items-center gap-3 ${formData.fecha === d.value
-                                                                        ? 'bg-primary/10 text-primary font-bold'
-                                                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                                                    ? 'bg-primary/10 text-primary font-bold'
+                                                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                                                     }`}
                                                             >
                                                                 <span className={`material-icons text-[16px] ${formData.fecha === d.value ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}>
@@ -327,15 +329,9 @@ const CoffeeChatModal = ({ isOpen, onClose, mentor }) => {
                                             className="custom-select w-full pl-12 pr-10 py-3.5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all outline-none text-sm font-medium"
                                             id="tema" name="tema" value={formData.tema} onChange={handleChange} required>
                                             <option disabled value="">Selecciona un tema...</option>
-                                            <option value="Revisión de CV / Portfolio">Revisión de CV / Portfolio</option>
-                                            <option value="Orientación de Carrera">Orientación de Carrera</option>
-                                            <option value="Desarrollo de Habilidades Soft">Desarrollo de Habilidades Soft</option>
-                                            <option value="Networking Estratégico">Networking Estratégico</option>
-                                            <option value="Insight del Sector Industrial">Insight del Sector Industrial</option>
-                                            <option value="Tu trabajo y/o línea de carrera">Tu trabajo y/o linea de carrera</option>
-                                            <option value="Experiencia en un sector o industria">Experiencia en un sector o industria</option>
-                                            <option value="Orientación universitaria y/o posgrado">Orientacion universitaria y/o posgrado</option>
-                                            <option value="Otro">Otro</option>
+                                            {THEME_OPTIONS?.map((tema, idx) => (
+                                                <option key={idx} value={tema}>{tema}</option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>

@@ -72,3 +72,87 @@ def delete_area(item_id: int, db: Session = Depends(get_db), current_admin: mode
     db.delete(item)
     db.commit()
     return {"message": "Área eliminada"}
+
+# --- INSTITUCIONES ---
+@router.get("/instituciones", response_model=List[CatalogItemResponse])
+def get_instituciones(db: Session = Depends(get_db)):
+    return db.query(models.Institution).all()
+
+@router.post("/instituciones", response_model=CatalogItemResponse)
+def create_institucion(item: CatalogItemCreate, db: Session = Depends(get_db), current_admin: models.User = Depends(get_current_admin)):
+    nombre = item.nombre.strip()
+    if not nombre:
+        raise HTTPException(status_code=400, detail="El nombre no puede estar vacío")
+    existe = db.query(models.Institution).filter(models.Institution.nombre.ilike(nombre)).first()
+    if existe:
+        raise HTTPException(status_code=409, detail=f"La institución '{nombre}' ya existe")
+    new_item = models.Institution(nombre=nombre)
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    return new_item
+
+@router.delete("/instituciones/{item_id}")
+def delete_institucion(item_id: int, db: Session = Depends(get_db), current_admin: models.User = Depends(get_current_admin)):
+    item = db.query(models.Institution).filter(models.Institution.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Institución no encontrada")
+    db.delete(item)
+    db.commit()
+    return {"message": "Institución eliminada"}
+
+# --- CARRERAS ---
+@router.get("/carreras", response_model=List[CatalogItemResponse])
+def get_carreras(db: Session = Depends(get_db)):
+    return db.query(models.Career).all()
+
+@router.post("/carreras", response_model=CatalogItemResponse)
+def create_carrera(item: CatalogItemCreate, db: Session = Depends(get_db), current_admin: models.User = Depends(get_current_admin)):
+    nombre = item.nombre.strip()
+    if not nombre:
+        raise HTTPException(status_code=400, detail="El nombre no puede estar vacío")
+    existe = db.query(models.Career).filter(models.Career.nombre.ilike(nombre)).first()
+    if existe:
+        raise HTTPException(status_code=409, detail=f"La carrera '{nombre}' ya existe")
+    new_item = models.Career(nombre=nombre)
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    return new_item
+
+@router.delete("/carreras/{item_id}")
+def delete_carrera(item_id: int, db: Session = Depends(get_db), current_admin: models.User = Depends(get_current_admin)):
+    item = db.query(models.Career).filter(models.Career.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Carrera no encontrada")
+    db.delete(item)
+    db.commit()
+    return {"message": "Carrera eliminada"}
+
+# --- TEMAS (Coffee Chat) ---
+@router.get("/temas", response_model=List[CatalogItemResponse])
+def get_temas(db: Session = Depends(get_db)):
+    return db.query(models.Theme).all()
+
+@router.post("/temas", response_model=CatalogItemResponse)
+def create_tema(item: CatalogItemCreate, db: Session = Depends(get_db), current_admin: models.User = Depends(get_current_admin)):
+    nombre = item.nombre.strip()
+    if not nombre:
+        raise HTTPException(status_code=400, detail="El nombre no puede estar vacío")
+    existe = db.query(models.Theme).filter(models.Theme.nombre.ilike(nombre)).first()
+    if existe:
+        raise HTTPException(status_code=409, detail=f"El tema '{nombre}' ya existe")
+    new_item = models.Theme(nombre=nombre)
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    return new_item
+
+@router.delete("/temas/{item_id}")
+def delete_tema(item_id: int, db: Session = Depends(get_db), current_admin: models.User = Depends(get_current_admin)):
+    item = db.query(models.Theme).filter(models.Theme.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Tema no encontrado")
+    db.delete(item)
+    db.commit()
+    return {"message": "Tema eliminado"}
