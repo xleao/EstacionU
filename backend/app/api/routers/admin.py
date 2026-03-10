@@ -914,8 +914,8 @@ def get_coffee_chat_stats_mentors(
         if len(appointments) > 0:
             avg_utilidad = sum([a.calificacion_utilidad or 0 for a in appointments]) / len(appointments)
             avg_general = sum([a.calificacion_general or 0 for a in appointments]) / len(appointments)
-            total_recomendaciones = sum([1 for a in appointments if a.recomendaria_mentor])
-            avg_total = (avg_utilidad + avg_general) / 2
+            avg_mentor = sum([a.recomendaria_mentor or 0 for a in appointments]) / len(appointments)
+            avg_total = avg_mentor
             
             stats.append({
                 "mentor_id": user.id,
@@ -924,8 +924,8 @@ def get_coffee_chat_stats_mentors(
                 "url_foto": user.perfil.url_foto if user.perfil else None,
                 "avg_utilidad": round(avg_utilidad, 1),
                 "avg_general": round(avg_general, 1),
+                "avg_mentor": round(avg_mentor, 1),
                 "total_reviews": len(appointments),
-                "total_recomendaciones": total_recomendaciones,
                 "avg_total": round(avg_total, 1)
             })
                 

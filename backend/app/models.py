@@ -168,7 +168,7 @@ class Appointment(Base):
     se_dio_en_dia_acordado = Column(Boolean, nullable=True)
     calificacion_general = Column(Integer, nullable=True)  # 1-5
     calificacion_utilidad = Column(Integer, nullable=True)  # 1-5
-    recomendaria_mentor = Column(Boolean, nullable=True)
+    recomendaria_mentor = Column(Integer, nullable=True) # Changed from Boolean to Integer to support 1-5 rating
     recordatorio_enviado = Column(Boolean, default=False)
     fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
 

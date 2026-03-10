@@ -176,15 +176,15 @@ const AdminCoffeeChatsPage = () => {
                                         </div>
                                         <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl mt-1 space-y-2">
                                             <div className="flex items-center justify-between text-sm">
-                                                <span className="text-slate-500 font-medium">Calificación Base</span>
+                                                <span className="text-slate-500 font-medium">Calificación Mentor</span>
                                                 <div className="flex items-center gap-1">
                                                     <span className="font-bold text-slate-900 dark:text-white">{stat.avg_total}</span>
                                                     <span className="material-icons text-amber-500 text-sm">star</span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between text-sm">
-                                                <span className="text-slate-500 font-medium">Recomendaciones</span>
-                                                <span className="font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded text-xs">{stat.total_recomendaciones} / {stat.total_reviews}</span>
+                                                <span className="text-slate-500 font-medium">Total Reseñas</span>
+                                                <span className="font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded text-xs">{stat.total_reviews}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -395,20 +395,20 @@ const AdminCoffeeChatsPage = () => {
                                                                     <h5 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1">
                                                                         <span className="material-icons text-xs">rate_review</span> Reseña Registrada
                                                                     </h5>
-                                                                    <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                                         <div>
-                                                                            <div className="text-xs text-slate-500 mb-1">Calificación Mentor</div>
+                                                                            <div className="text-[10px] text-slate-500 mb-1 font-bold uppercase tracking-wider">Exp. Plataforma</div>
                                                                             {renderStars(chat.calificacion_general)}
                                                                         </div>
                                                                         <div>
-                                                                            <div className="text-xs text-slate-500 mb-1">Utilidad Sesión</div>
+                                                                            <div className="text-[10px] text-slate-500 mb-1 font-bold uppercase tracking-wider">Utilidad Sesión</div>
                                                                             {renderStars(chat.calificacion_utilidad)}
                                                                         </div>
-                                                                        <div className="col-span-2 flex items-center gap-3">
-                                                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold ${chat.recomendaria ? 'bg-green-100 text-green-700 dark:bg-green-900/30' : 'bg-red-100 text-red-700 dark:bg-red-900/30'}`}>
-                                                                                <span className="material-icons text-sm">{chat.recomendaria ? 'thumb_up' : 'thumb_down'}</span>
-                                                                                {chat.recomendaria ? 'Recomienda al mentor' : 'No recomienda al mentor'}
-                                                                            </div>
+                                                                        <div>
+                                                                            <div className="text-[10px] text-slate-500 mb-1 font-bold uppercase tracking-wider">Calificación Mentor</div>
+                                                                            {renderStars(chat.recomendaria)}
+                                                                        </div>
+                                                                        <div className="col-span-1 md:col-span-3 flex items-center gap-3">
                                                                             {chat.se_dio_en_dia === false && (
                                                                                 <span className="text-xs font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/10 px-2 py-1 rounded">Fecha reprogramada</span>
                                                                             )}
@@ -534,21 +534,21 @@ const AdminCoffeeChatsPage = () => {
                                         <span className="material-icons text-[14px]">star</span> Reseña Completa
                                     </h4>
                                     <div className="bg-amber-50/50 dark:bg-amber-900/10 p-5 rounded-xl border border-amber-100 dark:border-amber-900/30">
-                                        <div className="grid grid-cols-2 gap-6 mb-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                                             <div>
-                                                <div className="text-xs text-slate-500 mb-1.5 font-medium">Mentor / Desempeño</div>
+                                                <div className="text-[10px] text-slate-500 mb-1.5 font-bold uppercase tracking-wider">Exp. Plataforma</div>
                                                 {renderStars(selectedChatModal.calificacion_general)}
                                             </div>
                                             <div>
-                                                <div className="text-xs text-slate-500 mb-1.5 font-medium">Utilidad / Impacto</div>
+                                                <div className="text-[10px] text-slate-500 mb-1.5 font-bold uppercase tracking-wider">Utilidad Sesión</div>
                                                 {renderStars(selectedChatModal.calificacion_utilidad)}
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-slate-500 mb-1.5 font-bold uppercase tracking-wider">Calificación Mentor</div>
+                                                {renderStars(selectedChatModal.recomendaria)}
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-amber-200/50 dark:border-amber-700/30">
-                                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold ${selectedChatModal.recomendaria ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                                                <span className="material-icons text-base">{selectedChatModal.recomendaria ? 'thumb_up' : 'thumb_down'}</span>
-                                                {selectedChatModal.recomendaria ? 'Recomendó al mentor' : 'No recomendó al mentor'}
-                                            </div>
                                             {selectedChatModal.se_dio_en_dia === false ? (
                                                 <span className="text-sm font-bold text-amber-600 bg-amber-100 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800">Se reprogramó la fecha original</span>
                                             ) : (
@@ -593,8 +593,8 @@ const AdminCoffeeChatsPage = () => {
                                                 <th className="p-4 font-black text-center w-16">Rank</th>
                                                 <th className="p-4 font-black">Mentor</th>
                                                 <th className="p-4 font-black text-center">Total Reseñas</th>
-                                                <th className="p-4 font-black text-center">Calificación</th>
-                                                <th className="p-4 font-black text-center">Recomendado</th>
+                                                <th className="p-4 font-black text-center">Utilidad</th>
+                                                <th className="p-4 font-black text-center">Calif. Mentor</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -635,15 +635,15 @@ const AdminCoffeeChatsPage = () => {
                                                             <span className="text-slate-600 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-900/50 px-2 py-1 rounded text-xs">{stat.total_reviews} reviews</span>
                                                         </td>
                                                         <td className="p-4 text-center">
-                                                            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-100 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-900/10">
-                                                                <span className="font-black text-slate-900 dark:text-white">{stat.avg_total}</span>
-                                                                <span className="material-icons text-amber-500 text-[16px]">star</span>
+                                                            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800/30 bg-blue-50 dark:bg-blue-900/10">
+                                                                <span className="font-black text-slate-900 dark:text-white">{stat.avg_utilidad}</span>
+                                                                <span className="material-icons text-blue-500 text-[16px]">star</span>
                                                             </div>
                                                         </td>
                                                         <td className="p-4 text-center">
-                                                            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-green-100 dark:border-green-800/30 bg-green-50 dark:bg-green-900/10">
-                                                                <span className="material-icons text-green-500 text-[16px]">thumb_up</span>
-                                                                <span className="font-bold text-green-700 dark:text-green-400">{stat.total_recomendaciones}</span>
+                                                            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-100 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-900/10">
+                                                                <span className="font-black text-slate-900 dark:text-white">{stat.avg_total}</span>
+                                                                <span className="material-icons text-amber-500 text-[16px]">star</span>
                                                             </div>
                                                         </td>
                                                     </tr>

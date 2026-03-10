@@ -21,9 +21,11 @@ const FeaturedMentors = () => {
         const carousel = scrollRef.current;
         if (!carousel) return;
 
-        let scrollSpeed = 0.5;
+        let scrollSpeed = 0.5; // Slow movement
         let lastTimestamp = 0;
         let reqId;
+        // Float accumulator to handle sub-pixel scroll increments
+        let exactScrollLeft = carousel.scrollLeft;
 
         const scroll = (timestamp) => {
             if (!lastTimestamp) lastTimestamp = timestamp;
@@ -32,13 +34,20 @@ const FeaturedMentors = () => {
 
             const adjustedSpeed = scrollSpeed * (deltaTime / 16.66);
 
-            // Only pause if dragging OR hovered
+            // Sync with real scroll position if user drags
+            if (Math.abs(exactScrollLeft - carousel.scrollLeft) > 2) {
+                exactScrollLeft = carousel.scrollLeft;
+            }
+
+            // Move automatically, and PAUSE when hovered or dragged
             if (!isDragging && !isHovered) {
-                if (carousel.scrollLeft >= carousel.scrollWidth / 2) {
-                    carousel.scrollLeft = 0;
-                } else {
-                    carousel.scrollLeft += adjustedSpeed;
+                exactScrollLeft -= adjustedSpeed;
+                
+                if (exactScrollLeft <= 0) {
+                    exactScrollLeft = carousel.scrollWidth / 2;
                 }
+                
+                carousel.scrollLeft = exactScrollLeft;
             }
             reqId = requestAnimationFrame(scroll);
         };

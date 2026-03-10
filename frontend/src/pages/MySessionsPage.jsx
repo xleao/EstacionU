@@ -23,7 +23,7 @@ const MySessionsPage = () => {
         horaRealizada: '',
         calificacionGeneral: 0,
         calificacionUtilidad: 0,
-        recomendaria: null
+        calificacionMentor: 0
     });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 4;
@@ -139,7 +139,7 @@ const MySessionsPage = () => {
                     horaRealizada: '',
                     calificacionGeneral: 0,
                     calificacionUtilidad: 0,
-                    recomendaria: null
+                    calificacionMentor: 0
                 });
             }
             return;
@@ -162,7 +162,7 @@ const MySessionsPage = () => {
     const isFeedbackValid = feedbackForm.seDioEnDiaAcordado !== null
         && feedbackForm.calificacionGeneral > 0
         && feedbackForm.calificacionUtilidad > 0
-        && feedbackForm.recomendaria !== null
+        && feedbackForm.calificacionMentor > 0
         && (feedbackForm.seDioEnDiaAcordado === true || (feedbackForm.fechaRealizada && feedbackForm.horaRealizada));
 
     const confirmComplete = async () => {
@@ -180,7 +180,7 @@ const MySessionsPage = () => {
                 hora_realizada: feedbackForm.seDioEnDiaAcordado ? null : feedbackForm.horaRealizada,
                 calificacion_general: feedbackForm.calificacionGeneral,
                 calificacion_utilidad: feedbackForm.calificacionUtilidad,
-                recomendaria_mentor: feedbackForm.recomendaria
+                recomendaria_mentor: feedbackForm.calificacionMentor
             };
 
             const res = await fetch(`/api/appointments/${completingId}/status`, {
@@ -979,60 +979,42 @@ const MySessionsPage = () => {
                                         </p>
                                     </div>
 
-                                    {/* Question 3: Usefulness Rating */}
+                                    {/* Content Experience Questions */}
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">¿En qué medida la sesión resolvió tus dudas o expectativas?</label>
+                                            <div className="flex gap-2">
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <button key={`u3-${star}`} type="button" onClick={() => setFeedbackForm({ ...feedbackForm, calificacionUtilidad: star })} className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all text-lg ${feedbackForm.calificacionUtilidad >= star ? 'border-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-500 scale-110 shadow-md shadow-cyan-400/20' : 'border-slate-100 dark:border-slate-700 text-slate-300 dark:text-slate-600 hover:border-cyan-300 hover:text-cyan-400'}`}>
+                                                        <span className="material-icons">star</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 font-medium">
+                                                {feedbackForm.calificacionUtilidad === 0 ? 'Selecciona una calificación' :
+                                                    feedbackForm.calificacionUtilidad <= 2 ? 'Poco útil' :
+                                                        feedbackForm.calificacionUtilidad <= 3 ? 'Moderadamente útil' :
+                                                            feedbackForm.calificacionUtilidad === 4 ? 'Muy útil' : '¡Extremadamente útil!'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Question 4: Mentor Rating */}
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">¿Cómo fue la experiencia del contenido del Coffee Chat?</label>
-                                        <p className="text-[10px] text-slate-400 font-medium -mt-1">(tiempo suficiente, el mentor respondió bien sus preguntas, etc.)</p>
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">¿Qué calificación general le darías al mentor?</label>
                                         <div className="flex gap-2">
                                             {[1, 2, 3, 4, 5].map(star => (
-                                                <button
-                                                    key={star}
-                                                    type="button"
-                                                    onClick={() => setFeedbackForm({ ...feedbackForm, calificacionUtilidad: star })}
-                                                    className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all text-lg ${feedbackForm.calificacionUtilidad >= star
-                                                        ? 'border-blue-400 bg-blue-50 dark:bg-blue-500/10 text-blue-500 scale-110 shadow-md shadow-blue-400/20'
-                                                        : 'border-slate-100 dark:border-slate-700 text-slate-300 dark:text-slate-600 hover:border-blue-300 hover:text-blue-400'
-                                                        }`}
-                                                >
+                                                <button key={`m-${star}`} type="button" onClick={() => setFeedbackForm({ ...feedbackForm, calificacionMentor: star })} className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all text-lg ${feedbackForm.calificacionMentor >= star ? 'border-green-400 bg-green-50 dark:bg-green-500/10 text-green-500 scale-110 shadow-md shadow-green-400/20' : 'border-slate-100 dark:border-slate-700 text-slate-300 dark:text-slate-600 hover:border-green-300 hover:text-green-400'}`}>
                                                     <span className="material-icons">star</span>
                                                 </button>
                                             ))}
                                         </div>
                                         <p className="text-[10px] text-slate-400 font-medium">
-                                            {feedbackForm.calificacionUtilidad === 0 ? 'Selecciona una calificación' :
-                                                feedbackForm.calificacionUtilidad <= 2 ? 'Poco útil' :
-                                                    feedbackForm.calificacionUtilidad <= 3 ? 'Moderadamente útil' :
-                                                        feedbackForm.calificacionUtilidad === 4 ? 'Muy útil' : '¡Extremadamente útil!'}
+                                            {feedbackForm.calificacionMentor === 0 ? 'Selecciona una calificación' :
+                                                feedbackForm.calificacionMentor <= 2 ? 'Necesita mejorar' :
+                                                    feedbackForm.calificacionMentor <= 3 ? 'Regular' :
+                                                        feedbackForm.calificacionMentor === 4 ? 'Muy buen mentor' : '¡Excelente mentor!'}
                                         </p>
-                                    </div>
-
-                                    {/* Question 4: Would you recommend? */}
-                                    <div className="space-y-3">
-                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">¿Recomendarías a este mentor?</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => setFeedbackForm({ ...feedbackForm, recomendaria: true })}
-                                                className={`py-3 px-4 rounded-2xl border-2 font-bold text-sm transition-all ${feedbackForm.recomendaria === true
-                                                    ? 'border-green-500 bg-green-50 dark:bg-green-500/10 text-green-600'
-                                                    : 'border-slate-100 dark:border-slate-700 text-slate-500 hover:border-green-300'
-                                                    }`}
-                                            >
-                                                <span className="material-icons text-lg align-middle mr-1">thumb_up</span>
-                                                Sí, lo recomiendo
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFeedbackForm({ ...feedbackForm, recomendaria: false })}
-                                                className={`py-3 px-4 rounded-2xl border-2 font-bold text-sm transition-all ${feedbackForm.recomendaria === false
-                                                    ? 'border-red-500 bg-red-50 dark:bg-red-500/10 text-red-600'
-                                                    : 'border-slate-100 dark:border-slate-700 text-slate-500 hover:border-red-300'
-                                                    }`}
-                                            >
-                                                <span className="material-icons text-lg align-middle mr-1">thumb_down</span>
-                                                No lo recomiendo
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
 

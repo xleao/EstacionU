@@ -332,7 +332,7 @@ async def update_appointment_status(
         
         recomendaria = status_data.get("recomendaria_mentor")
         if recomendaria is not None:
-            appt.recomendaria_mentor = bool(recomendaria)
+            appt.recomendaria_mentor = int(recomendaria)
     
     db.commit()
     return {"message": f"Estado actualizado a '{new_status}'", "status": new_status}

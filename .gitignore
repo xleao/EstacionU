@@ -10,7 +10,6 @@ ENV/
 
 # Node
 node_modules/
-dist/
 .DS_Store
 
 # IDE
